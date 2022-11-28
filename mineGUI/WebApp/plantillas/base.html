@@ -1,0 +1,87 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name = "viewreport" content="width=device-width, initial scale=1.0">
+        <title>{% block title %} {% endblock %}</title>
+
+        <link rel="short icon" href="{% static 'imagenes/favicon.ico' %}">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css"/>
+        <link rel="preconnect" href="https://fonts.googleapis.com/%22%3E">
+        <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+        {% block head %} {% endblock %}
+
+    </head>
+    <header>
+      <nav class="navbar navbar-expand-lg navbar-dark " style="background-color: #244769;">
+        <div class="container-lg text-white">
+          <a class="navbar-brand" href="/home">
+            <img src="{% static 'imagenes/logo.png' %}" alt="" width="30" height="30" class="d-inline-block align-text-top">
+            MineGUI
+          </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+              <li class="nav-item px-3">
+                <a class="nav-link disabled" href="/"><i class="bi bi-question-lg"></i> Proyectos </a>
+              </li>
+              
+              <li class="nav-item px-3">
+                <a class="nav-link disabled" href="/"><i class="bi-tools"></i> EDA </a>
+              </li>
+              
+              <li class="nav-item px-3">
+                <a class="nav-link disabled"  href="/"><i class="bi-person"></i> PCA </a>
+              </li>
+              <li class="nav-item px-3">
+                <a class="nav-link disabled" href="/"><i class="bi-clipboard-data"></i> Arboles o Bosques </a>
+              </li>
+              <li class="nav-item px-3">
+                <a class="nav-link" href="/pyScript"><i class="bi-clipboard-data"></i> Prueba con PyScript </a>
+              </li>
+
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </header>
+  <body style="background-color: #eef5ee;">
+    <div class="container-fluid">
+      {% block body %}
+            
+      {% endblock %}
+    </div>
+    <footer class="bg-link align-items-center text-center ">
+      <div class="text-white text-center p-3" style="background-color: #244769">
+          Facultad de Psicología &copy; 2022
+          <p>
+            Todos los derechos reservados</br> 
+            Prohibida cualquier reproducción total o parcial del contenido de este sitio. 
+            Hecho en México, todos los derechos reservados 2021-2022. </br> 
+            Esta página puede ser reproducida con fines no lucrativos, siempre y cuando no se
+            mutile, se cite la fuente completa y su dirección electrónica. De
+            otra forma requiere permiso previo por escrito de la institución. </br>
+            <a id="links" href="/creditos"
+            target="_blank">Créditos</a>
+            <br>
+          </p>
+      </div>
+    </footer>
+        <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="{% static 'js/utils/popups.js' %}"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+        {% block scripts %}
+
+        {% endblock %}
+    </body>
+</html>
