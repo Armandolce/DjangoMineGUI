@@ -5,4 +5,5 @@ urlpatterns = [
     path('', views.home),
     path('home/', views.home),
     path('pyScript/', views.pyscript),
+    path('EDA/', views.EDA),
 ]

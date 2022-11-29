@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} mineGUI | EDA {% endblock %}
+
+{% block head %} 
+
+<link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css" />
+<script defer src="https://pyscript.net/alpha/pyscript.js"></script>
+<py-env>
+   - matplotlib
+   - pandas
+   - seaborn
+</py-env>
+
+{% endblock %}
+
+{% block body %}
+<h1>Algoritmo EDA</h1>
+    <p class="lead">
+       Primera prueba usando PyScript a secas y HTML con Bootstrap
+    </p>
+
+<div class="row">
+    <div class="col-sm-12 p-2 bg-white ">
+       <div id="dataFrame1"></div>
+    </div>
+</div>
+
+<h1>Paso 1</h1>
+    <p class="lead">
+        Descripción de la estructura de los datos
+    </p>
+
+<div class="row">
+    <div class="col-sm-12 bg-white">
+       <div id="shape"></div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12 bg-white">
+       <div id="tipos"></div>
+    </div>
+</div>
+
+<h1>Paso 2</h1>
+    <p class="lead">
+        Identificación de datos faltantes
+    </p>
+
+<div class="row">
+    <div class="col-sm-12 bg-white">
+       <div id="nulos"></div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12 bg-white">
+       <div id="info"></div>
+    </div>
+</div>
+
+<h1>Paso 3</h1>
+    <p class="lead">
+        Detección de valores atípicos
+    </p>
+
+<div class="row">
+    <div class="col-sm-12 bg-white">
+       <div id="hist"></div>
+    </div>
+</div>
+
+ <py-script>
+# Import libraries
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+# Get the data
+from pyodide.http import open_url
+url = 'https://raw.githubusercontent.com/Armandolce/MineriaDatos/master/Proyecto/melb_data.csv'
+url_content = open_url(url)
+df = pd.read_csv(url_content)
+
+pyscript.write("dataFrame1", df)
+pyscript.write("shape", df.shape)
+pyscript.write("tipos", df.dtypes)
+pyscript.write("nulos", df.isnull().sum())
+pyscript.write("info", df.info())
+
+hist = df.hist(figsize=(14,14), xrot=45)
+plt.show()
+
+pyscript.write("hist", plt)
+
+
+ </py-script>
+ <py-repl auto-generate="true"></py-repl>
+
+{% endblock %}
+
+{% block scripts %}
+
+
+
+{% endblock %} 
