@@ -67,8 +67,20 @@
     </p>
 
 <div class="row">
-    <div class="col-sm-12 bg-white">
+    <div class="col-sm-12">
        <div id="hist"></div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12 bg-white">
+       <div id="describe"></div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12 ">
+       <div id="cajas"></div>
     </div>
 </div>
 
@@ -93,6 +105,14 @@ hist = df.hist(figsize=(14,14), xrot=45)
 plt.show()
 
 pyscript.write("hist", plt)
+
+pyscript.write("describe", df.describe())
+
+fig = plt
+sns.boxplot(x=df["Bedroom2"])
+fig.show()
+pyscript.write("Cajas", fig)
+
 
 
  </py-script>
