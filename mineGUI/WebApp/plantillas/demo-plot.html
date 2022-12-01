@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} mineGUI | EDA {% endblock %}
+
+{% block body %}
+
+<table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
+    <tr>
+      {% for col in df.columns %}
+        <th>
+          {{col}}
+        </th>
+      {% endfor %}
+    </tr>
+      {% for index, row in df.iterrows %}
+        <tr>
+          {% for cell in row %}
+            <td>
+              {{cell}}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+  </table>
+
+
+{% autoescape off %}
+{{ plot_div }}
+{% endautoescape %}
+
+{% endblock %}
+
+{% block scripts %}
+
+
+
+{% endblock %} 

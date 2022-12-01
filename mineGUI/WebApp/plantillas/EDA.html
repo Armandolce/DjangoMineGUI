@@ -94,25 +94,19 @@ from pyodide.http import open_url
 url = 'https://raw.githubusercontent.com/Armandolce/MineriaDatos/master/Proyecto/melb_data.csv'
 url_content = open_url(url)
 df = pd.read_csv(url_content)
+df1 = pd.DataFrame(df)
 
-pyscript.write("dataFrame1", df)
-pyscript.write("shape", df.shape)
-pyscript.write("tipos", df.dtypes)
-pyscript.write("nulos", df.isnull().sum())
-pyscript.write("info", df.info())
-
-hist = df.hist(figsize=(14,14), xrot=45)
-plt.show()
-
+pyscript.write("dataFrame1", df1)
+pyscript.write("shape", df1.shape)
+pyscript.write("tipos", df1.dtypes)
+pyscript.write("nulos", df1.isnull().sum())
+#pyscript.write("info", df1.info())
+hist = df1.hist(figsize=(14,14), xrot=45)
 pyscript.write("hist", plt)
-
-pyscript.write("describe", df.describe())
-
-fig = plt
-sns.boxplot(x=df["Bedroom2"])
-fig.show()
-pyscript.write("Cajas", fig)
-
+pyscript.write("describe", df1.describe())
+sns.boxplot(x=df['Price'])
+pyscript.write("Cajas", plt)
+plt.show()
 
 
  </py-script>
