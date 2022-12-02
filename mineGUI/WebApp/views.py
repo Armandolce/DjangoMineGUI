@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from plotly.offline import plot
 import plotly.graph_objects as go
 import plotly.express as px
@@ -18,19 +18,18 @@ def pyscript(request):
 def EDA(request):
     return render(request, 'EDA.html')
 
+def busqueda(request):
+    return render(request, 'Busqueda.html')
+
 def demo_plot_view(request):
-    """ 
-    View demonstrating how to display a graph object
-    on a web page with Plotly. 
-    """
-
-
-    df = pd.read_csv('https://raw.githubusercontent.com/Armandolce/MineriaDatos/master/Proyecto/melb_data.csv')
+    source = request.POST['fuente']
+    #source = "WebApp/data/melb_data.csv"
+    df = pd.read_csv(source)
     df2 = df[:10]
-    json_records = df2.reset_index().to_json(orient ='records')
-    arr = []
-    arr = json.loads(json_records)
-    contextt = {'d': arr}
+    size = df.shape
+    fig = px.histogram(df, x=df.columns[2])
+    #fig = px.box(df, x="Price") 
+
     # Setting layout of the figure.
     layout = {
         'title': 'Histogramas?',
@@ -40,12 +39,9 @@ def demo_plot_view(request):
         'width': 560,
     }
 
-    fig = px.histogram(df, x="Price")
-    #fig = px.box(df, x="Price") 
-
     # Getting HTML needed to render the plot.
     plot_div = plot({'data': fig, 'layout': layout}, 
                     output_type='div')
 
     return render(request, 'demo-plot.html', 
-                  context={'plot_div': plot_div, 'df': df2})
+                  context={'plot_div': plot_div, 'df': df2, 'size' : size})
