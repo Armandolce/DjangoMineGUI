@@ -3,119 +3,79 @@
 
 {% block title %} mineGUI | EDA {% endblock %}
 
-{% block head %} 
-
-<link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css" />
-<script defer src="https://pyscript.net/alpha/pyscript.js"></script>
-<py-env>
-   - matplotlib
-   - pandas
-   - seaborn
-</py-env>
-
-{% endblock %}
-
 {% block body %}
-<h1>Algoritmo EDA</h1>
-    <p class="lead">
-       Primera prueba usando PyScript a secas y HTML con Bootstrap
-    </p>
 
-<div class="row">
-    <div class="col-sm-12 p-2 bg-white ">
-       <div id="dataFrame1"></div>
-    </div>
+<div class="container align-items-center">
+  <table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
+    <tr>
+      {% for col in df.columns %}
+        <th>
+          {{col}}
+        </th>
+      {% endfor %}
+    </tr>
+      {% for index, row in df.iterrows %}
+        <tr>
+          {% for cell in row %}
+            <td>
+              {{cell}}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+  </table>
+  <p> {{size.0}} rows x {{size.1}} columns</p>
+
+  <a id="DisplayHist" class="btn btn-primary btn-lg" onclick="toggle(this)">Desplegar Histogramas</a>
+  <section hidden="hidden" id="Histogramas">
+    {% for fig in plot_div %}
+      {%  autoescape off %}
+      {{ fig }}
+      {% endautoescape %}
+    {% endfor %}
+  </section>
+
+  <a id="DisplayCajas" class="btn btn-primary btn-lg" onclick="toggleBox(this)"> Mostrar Cajas </a>
+  <section hidden="hidden"  id="Cajas">
+    {% for fig in diagramsCaja %}
+    {% autoescape off %}
+    {{ fig }}
+    {% endautoescape %}
+    {% endfor %}  
+  </section>
+
+
 </div>
-
-<h1>Paso 1</h1>
-    <p class="lead">
-        Descripción de la estructura de los datos
-    </p>
-
-<div class="row">
-    <div class="col-sm-12 bg-white">
-       <div id="shape"></div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-sm-12 bg-white">
-       <div id="tipos"></div>
-    </div>
-</div>
-
-<h1>Paso 2</h1>
-    <p class="lead">
-        Identificación de datos faltantes
-    </p>
-
-<div class="row">
-    <div class="col-sm-12 bg-white">
-       <div id="nulos"></div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-sm-12 bg-white">
-       <div id="info"></div>
-    </div>
-</div>
-
-<h1>Paso 3</h1>
-    <p class="lead">
-        Detección de valores atípicos
-    </p>
-
-<div class="row">
-    <div class="col-sm-12">
-       <div id="hist"></div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-sm-12 bg-white">
-       <div id="describe"></div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-sm-12 ">
-       <div id="cajas"></div>
-    </div>
-</div>
-
- <py-script>
-# Import libraries
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-# Get the data
-from pyodide.http import open_url
-url = 'https://raw.githubusercontent.com/Armandolce/MineriaDatos/master/Proyecto/melb_data.csv'
-url_content = open_url(url)
-df = pd.read_csv(url_content)
-df1 = pd.DataFrame(df)
-
-pyscript.write("dataFrame1", df1)
-pyscript.write("shape", df1.shape)
-pyscript.write("tipos", df1.dtypes)
-pyscript.write("nulos", df1.isnull().sum())
-#pyscript.write("info", df1.info())
-hist = df1.hist(figsize=(14,14), xrot=45)
-pyscript.write("hist", plt)
-pyscript.write("describe", df1.describe())
-sns.boxplot(x=df['Price'])
-pyscript.write("Cajas", plt)
-plt.show()
-
-
- </py-script>
- <py-repl auto-generate="true"></py-repl>
-
 {% endblock %}
 
 {% block scripts %}
+<script>
+  let toggle = button => {
+    let element = document.getElementById("Histogramas");
+    let hidden = element.getAttribute("hidden");
 
+    if (hidden) {
+       element.removeAttribute("hidden");
+       button.innerText = "Ocultar histogramas";
+    } else {
+       element.setAttribute("hidden", "hidden");
+       button.innerText = "Mostrar Hisogramas";
+    }
+  }
+  
+  let toggleBox = button => {
+    let element = document.getElementById("Cajas");
+    let hidden = element.getAttribute("hidden");
 
+    if (hidden) {
+       element.removeAttribute("hidden");
+       button.innerText = "Ocultar Cajas";
+    } else {
+       element.setAttribute("hidden", "hidden");
+       button.innerText = "Mostrar Cajas";
+    }
+  }
+
+</script>
 
 {% endblock %} 

@@ -15,33 +15,52 @@ def home(request):
 def pyscript(request):
     return render(request, 'pyscript.html')
 
-def EDA(request):
-    return render(request, 'EDA.html')
-
 def busqueda(request):
     return render(request, 'Busqueda.html')
 
-def demo_plot_view(request):
+def EDA(request):
     source = request.POST['fuente']
     #source = "WebApp/data/melb_data.csv"
     df = pd.read_csv(source)
     df2 = df[:10]
     size = df.shape
-    fig = px.histogram(df, x=df.columns[2])
-    #fig = px.box(df, x="Price") 
+    cajas = []
+    histogramas = []
+    for i in range(df.shape[1]):
+        dataType = df.columns.values[i]
+        if df[dataType].dtype != object:
+            fig = px.histogram(df, x=df.columns[i])
 
-    # Setting layout of the figure.
-    layout = {
-        'title': 'Histogramas?',
-        'xaxis_title': 'X',
-        'yaxis_title': 'Y',
-        'height': 420,
-        'width': 560,
-    }
+            # Setting layout of the figure.
+            layout = {
+                'title': df.columns[i],
+                'xaxis_title': 'X', 
+                'yaxis_title': 'Y',
+                'height': 420,
+                'width': 560,
+            }
+            # Getting HTML needed to render the plot.
+            plot_div = plot({'data': fig, 'layout': layout}, 
+                            output_type='div')
+            histogramas.append(plot_div)
+    
+    for i in range(df.shape[1]):
+        dataType = df.columns.values[i]
+        if df[dataType].dtype != object:
+            fig = px.box(df, x=df.columns[i])
 
-    # Getting HTML needed to render the plot.
-    plot_div = plot({'data': fig, 'layout': layout}, 
-                    output_type='div')
+            # Setting layout of the figure.
+            layout = {
+                'title': df.columns[i],
+                'xaxis_title': 'X', 
+                'yaxis_title': 'Y',
+                'height': 420,
+                'width': 560,
+            }
+            # Getting HTML needed to render the plot.
+            plot_div = plot({'data': fig, 'layout': layout}, 
+                            output_type='div')
+            cajas.append(plot_div)
 
-    return render(request, 'demo-plot.html', 
-                  context={'plot_div': plot_div, 'df': df2, 'size' : size})
+    return render(request, 'EDA.html', 
+                  context={'plot_div': histogramas, 'df': df2, 'size' : size, 'diagramsCaja' : cajas})
