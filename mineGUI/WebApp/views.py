@@ -1,25 +1,53 @@
 from django.shortcuts import render, redirect
+
 from plotly.offline import plot
 import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import json
 
+from .forms import ProjectForm
+from .models import Proyecto
 
 # Create your views here.
 def home(request):
     return render(request,'home.html')
 
-def pyscript(request):
-    return render(request, 'pyscript.html')
+def lista_Proyectos(request):
+    proyectos = Proyecto.objects.all()
+    return render(request, 'Proyectos.html', {
+        'proyectos': proyectos
+    })
+
+def crea_Proyecto(request):
+    if request.method == 'POST':
+        form = ProjectForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('project_list')
+    else:
+        form = ProjectForm()
+    
+    return render(request, 'crea_Proyecto.html', { 'form': form})
+
+def delete_project(request, pk):
+    if request.method == 'POST':
+        proyecto = Proyecto.objects.get(pk=pk)
+        proyecto.delete()
+    return redirect('project_list')
 
 def busqueda(request):
     return render(request, 'Busqueda.html')
 
-def EDA(request):
-    source = request.POST['fuente']
+def preEDA(request):
+    proyectos = Proyecto.objects.all()
+    return render(request, 'EligeEDA.html', {'projects': proyectos})
+
+def EDA(request, pk):
+    proyecto = Proyecto.objects.get(pk=pk)
+    source = proyecto.data
+
     #source = "WebApp/data/melb_data.csv"
     df = pd.read_csv(source)
     df2 = df[:10]
@@ -36,8 +64,8 @@ def EDA(request):
                 'title': df.columns[i],
                 'xaxis_title': 'X', 
                 'yaxis_title': 'Y',
-                'height': 420,
-                'width': 560,
+                'height': 240,
+                'width': 240,
             }
             # Getting HTML needed to render the plot.
             plot_div = plot({'data': fig, 'layout': layout}, 
@@ -54,8 +82,8 @@ def EDA(request):
                 'title': df.columns[i],
                 'xaxis_title': 'X', 
                 'yaxis_title': 'Y',
-                'height': 420,
-                'width': 560,
+                'height': 240,
+                'width': 240,
             }
             # Getting HTML needed to render the plot.
             plot_div = plot({'data': fig, 'layout': layout}, 

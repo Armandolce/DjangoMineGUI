@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %} mineGUI | Proyectos {% endblock %}
+
+{% block head %} 
+
+{% endblock %}
+
+{% block body %}
+<h2>Project list</h2>
+<p>
+  <a href="{% url 'upload_project' %}" class="btn btn-primary"
+    >Crear Proyecto</a
+  >
+</p>
+<table class="table mb-0">
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Descripcion</th>
+      <th>URL</th>
+      <th>File</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for proyectos in proyectos %}
+    <tr>
+      <td>{{ proyectos.Nombre }}</td>
+      <td>{{ proyectos.descripcion }}</td>
+      <td>{{ proyectos.URL }}</td>
+      <td>{{ proyectos.data }}</td>
+      <td>
+        <form method="post" action="{% url 'delete_project' proyectos.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
