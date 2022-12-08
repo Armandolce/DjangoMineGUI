@@ -4,10 +4,20 @@
 {% block title %} mineGUI | EDA {% endblock %}
 
 {% block body %}
+<div class="row">
+  <div class="col-xs-12">
+    <h1>EDA</h1>
+  </div>
+</div>
 
-<div class="container align-items-center">
-  <table class="table table-striped" style="display: block; overflow-x: auto; white-space: nowrap;">
+
+<div class="container" style="overflow-x: auto;">
+  <h5>DataFrame ingresado:</h5>
+  <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
     <tr>
+      <th>
+
+      </th>
       {% for col in df.columns %}
         <th>
           {{col}}
@@ -16,6 +26,9 @@
     </tr>
       {% for index, row in df.iterrows %}
         <tr>
+          <th>
+            {{index}}
+          </th>
           {% for cell in row %}
             <td>
               {{cell}}
@@ -25,57 +38,178 @@
       {% endfor %}
   </table>
   <p> {{size.0}} rows x {{size.1}} columns</p>
+</div>
 
-  <a id="DisplayHist" class="btn btn-primary btn-lg" onclick="toggle(this)">Desplegar Histogramas</a>
-  <section hidden="hidden" id="Histogramas">
-    {% for fig in plot_div %}
-      {%  autoescape off %}
-      {{ fig }}
-      {% endautoescape %}
+<div class="row my-4">
+  <h6>Forma del DataFrame:</h6>
+  <p>({{size.0}}, {{size.1}})</p>
+
+  <div class="col-sm-6">
+    <h5> Paso 1: Descripción de la estructura de los datos</h5>
+      
+        <h6>Tipos de datos:</h6>
+          {% for columna in tipos %}  
+            <p>{{columna}}</p>
+          {% endfor %}
+  </div>
+  <div class="col-sm-6">
+    <h5> Paso 2: Identificación de datos faltantes</h5>
+    <h6>Cantidad de datos nulos por variable:</h6>
+    {% for columna in nulos %}  
+      <p>{{columna}}</p>
     {% endfor %}
-  </section>
+  </div>
+</div>
 
-  <a id="DisplayCajas" class="btn btn-primary btn-lg" onclick="toggleBox(this)"> Mostrar Cajas </a>
-  <section hidden="hidden"  id="Cajas">
-    {% for fig in diagramsCaja %}
+<div class="row my-4">
+  <div class="col-sm-12">
+    <h5> Paso 3: Detección de valores atípicos</h5>
+    <p style="text-align: justify;">Se pueden utilizar gráficos para tener una idea general de las distribuciones 
+      de los datos, y se sacan estadísticas para resumir los datos. 
+      Estas dos estrategias son recomendables y se complementan. <br>
+      La distribución se refiere a cómo se distribuyen los valores en una variable o 
+      con qué frecuencia ocurren. <br>
+      Para las variables numéricas, se observa cuántas veces aparecen grupos de números 
+      en una columna. Mientras que para las variables categóricas, son las clases de cada
+      columna y su frecuencia.</p>
+
+    <h6>1) Distribucion de variables numéricas:</h6>
+  </div>
+  {% for fig in plot_div %}
+  <div class="col-sm-6">
+    {%  autoescape off %}
+    {{ fig }}
+    {% endautoescape %}
+  </div>
+  {% endfor %}
+  
+  <div class="col-sm-12">
+    <h6>2) Resumen estadístico de variables numéricas:</h6>
+    <div class="container" style="overflow-x: auto;">
+      <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+        <tr>
+          <th>
+
+          </th>
+          {% for col in df3.columns %}
+            <th>
+              {{col}}
+            </th>
+          {% endfor %}
+        </tr>
+          {% for index, row in df3.iterrows %}
+            <tr>
+              <th>
+                {{index}}
+              </th>
+              {% for cell in row %}
+                <td>
+                  {{cell}}
+                </td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+      </table>
+    </div>
+  </div>
+  
+  <div class="col-sm-12 my-2">
+    <h6>3) Diagramas para detectar posibles valores atípicos:</h6>
+  </div>  
+  {% for fig in diagramsCaja %}
+  <div class="col-sm-6">
     {% autoescape off %}
     {{ fig }}
     {% endautoescape %}
-    {% endfor %}  
-  </section>
+  </div>
+  {% endfor %}  
 
+  {% if flag == True %}
+    <div class="col-sm-12 my-2">
+      <h6>4) Distribución de variables categóricas:</h6>
+      <div class="container" style="overflow-x: auto;">
+        <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+          <tr>
+            <th>
+
+            </th>
+            {% for col in df4.columns %}
+              <th>
+                {{col}}
+              </th>
+            {% endfor %}
+          </tr>
+            {% for index, row in df4.iterrows %}
+              <tr>
+                <th>
+                  {{index}}
+                </th>
+                {% for cell in row %}
+                  <td>
+                    {{cell}}
+                  </td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+        </table>
+      </div>
+    </div>
+    {% for fig in Cat %}
+    <div class="col-sm-6">
+      {% autoescape off %}
+      {{ fig }}
+      {% endautoescape %}
+    </div>
+    {% endfor %}
+    <div class="col-sm-12 my-2">
+      <h6>5)  Agrupación por variables categóricas: PENDIENTE</h6>
+      <div class="container" style="overflow-x: auto;">
+        {% for array in groups %}
+          <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+            <tr>
+              <th>
+
+              </th>
+              {% for dfG in array %}
+                {% for col in dfG %}
+                  <th>
+                    {{col}}
+                  </th>
+                  
+                {% endfor %}
+              {% endfor %}
+            </tr>
+              {% for  index, row in dfG %}
+                <tr>
+                  <th>
+                    {{index}}
+                  </th>
+                  {% for cell in row %}
+                    <td>
+                      {{cell}}
+                    </td>
+                  {% endfor %}
+                </tr>
+              {% endfor %}
+          </table>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
 
 </div>
+
+<div class="row my-4">
+  <div class="col-sm-12">
+    <h5> Paso 4:  Identificación de relaciones entre pares variables</h5>
+    <h6>Mapa de calor de correlaciones:</h6>
+    {%  autoescape off %}
+    {{ mapaC }}
+    {% endautoescape %}
+  </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
-<script>
-  let toggle = button => {
-    let element = document.getElementById("Histogramas");
-    let hidden = element.getAttribute("hidden");
-
-    if (hidden) {
-       element.removeAttribute("hidden");
-       button.innerText = "Ocultar histogramas";
-    } else {
-       element.setAttribute("hidden", "hidden");
-       button.innerText = "Mostrar Hisogramas";
-    }
-  }
-  
-  let toggleBox = button => {
-    let element = document.getElementById("Cajas");
-    let hidden = element.getAttribute("hidden");
-
-    if (hidden) {
-       element.removeAttribute("hidden");
-       button.innerText = "Ocultar Cajas";
-    } else {
-       element.setAttribute("hidden", "hidden");
-       button.innerText = "Mostrar Cajas";
-    }
-  }
-
-</script>
-
 {% endblock %} 

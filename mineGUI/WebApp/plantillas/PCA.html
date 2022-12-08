@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} mineGUI | PCA {% endblock %}
+
+{% block body %}
+<div class="row">
+  <div class="col-xs-12">
+    <h1>PCA</h1>
+  </div>
+</div>
+
+<div class="container" style="overflow-x: auto;">
+  <h5>DataFrame ingresado (Primeros 10 elementos):</h5>
+  <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+    <tr>
+      <th>
+
+      </th>
+      {% for col in df.columns %}
+        <th>
+          {{col}}
+        </th>
+      {% endfor %}
+    </tr>
+      {% for index, row in df.iterrows %}
+        <tr>
+          <th>
+            {{index}}
+          </th>
+          {% for cell in row %}
+            <td>
+              {{cell}}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+  </table>
+  <p> {{size.0}} rows x {{size.1}} columns</p>
+</div>
+
+<div class="row my-4">
+  <div class="col-sm-12">
+    <h5> Paso 1: Hay evidencia de variables posiblemente correlacionadas.</h5>
+  </div>
+  <div class="container" style="overflow-x: auto;">
+    <h5>Dataframe de las correlaciones:</h5>
+    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+      <tr>
+        <th>
+  
+        </th>
+        {% for col in corr.columns %}
+          <th>
+            {{col}}
+          </th>
+        {% endfor %}
+      </tr>
+        {% for index, row in corr.iterrows %}
+          <tr>
+            <th>
+              {{index}}
+            </th>
+            {% for cell in row %}
+              <td>
+                {{cell}}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+    </table>
+  </div>
+  <div class="col-sm-12">
+    <h6>Mapa de calor de correlaciones:</h6>
+    {%  autoescape off %}
+    {{ mapaC }}
+    {% endautoescape %}
+  </div>
+</div>
+
+<div class="row my-4">
+  <div class="col-sm-12">
+    <h5> Paso 2: Se hace una estandarización de los datos.</h5>
+  </div>
+  <div class="container" style="overflow-x: auto;">
+    <h5>Dataframe de los datos estandarizados (Primeros 10 elementos):</h5>
+    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+      <tr>
+        <th>
+  
+        </th>
+        {% for col in ME.columns %}
+          <th>
+            {{col}}
+          </th>
+        {% endfor %}
+      </tr>
+        {% for index, row in ME.iterrows %}
+          <tr>
+            <th>
+              {{index}}
+            </th>
+            {% for cell in row %}
+              <td>
+                {{cell}}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+    </table>
+  </div>
+</div>
+
+<div class="row my-4">
+  <div class="col-sm-12">
+    <h5> Paso 3 y 4: Se calcula la matriz de covarianzas o correlaciones, 
+      y se calculan los componentes (eigen-vectores) y la varianza (eigen-valores).</h5>
+  </div>
+  <div class="col">
+    <h5>Matriz de covarianza:</h5>
+    {{pca1}}
+  </div>
+</div>
+
+<div class="row my-4">
+  <div class="col-sm-12">
+    <h5> Paso 5: Se decide el número de componentes principales.</h5>
+    <h5>Proporcion de varianza:</h5>
+      <p style="text-align: justify;">{{Var}}</p>
+    <h5>Varianza acumulada </h5> 
+    <h6>La mejor varianza acumulada fue con {{nComp}} componentes y es la siguiente:</h6>
+      <p>{{ VarAc }}</p>
+    
+    <h5>Grafica de varianza acumulada:</h5>
+      {%  autoescape off %}
+      {{ figVar }}
+      {% endautoescape %}
+  </div>
+</div>
+
+<div class="row my-4">
+  <div class="col-sm-12">
+    <h5> Paso 6: Se examina la proporción de relevancias -cargas-</h5>
+  </div>
+  <div class="container" style="overflow-x: auto;">
+    <h5>Dataframe acotado y con valores absolutos:</h5>
+    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+      <tr>
+        <th>
+  
+        </th>
+        {% for col in CargasC.columns %}
+          <th>
+            {{col}}
+          </th>
+        {% endfor %}
+      </tr>
+        {% for index, row in CargasC.iterrows %}
+          <tr>
+            <th>
+              {{index}}
+            </th>
+            {% for cell in row %}
+              <td>
+                {{cell}}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+    </table>
+  </div>
+  <div class="col-sm-12">
+    <h5>Seleccion de variables menos significativas: EN CONSTRUCCION</h5>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+{% endblock %} 

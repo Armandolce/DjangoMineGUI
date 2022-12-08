@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %} mineGUI | Pre EDA {% endblock %}
+{% block title %} mineGUI | Pre PCA {% endblock %}
 
 {% block body %}
-<h2>EDA</h2>
+<h2>PCA</h2>
 <p>Elige el proyecto que quieres analizar</p>
 <table class="table mb-0">
   <thead>
@@ -20,7 +20,7 @@
       <td>{{ proyecto.Nombre }}</td>
       <td>{{ proyecto.descripcion }}</td>
       <td>
-        <form method="post" action="{% url 'EDA' proyecto.pk %}">
+        <form method="post" action="{% url 'PCA' proyecto.pk %}">
           {% csrf_token %}
           <button type="submit" class="btn btn-primary">Elegir</button>
         </form>

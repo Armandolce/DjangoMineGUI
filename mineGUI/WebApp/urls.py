@@ -6,6 +6,8 @@ urlpatterns = [
     path('home/', views.home),
     path('EligeEDA/',views.preEDA),
     path('EDA/<int:pk>', views.EDA, name='EDA'),
+    path('EligePCA/',views.prePCA),
+    path('PCA/<int:pk>', views.PCA_, name='PCA'),
     path('Busqueda/',views.busqueda),
     path('Proyectos/', views.lista_Proyectos, name='project_list'),
     path('Proyectos/creaProyecto/', views.crea_Proyecto, name='upload_project'),
