@@ -15,6 +15,7 @@ from .models import Proyecto
 def home(request):
     return render(request,'home.html')
 
+#Vistas de Proyectos
 def lista_Proyectos(request):
     proyectos = Proyecto.objects.all()
     return render(request, 'Proyectos.html', {
@@ -30,24 +31,25 @@ def crea_Proyecto(request):
     else:
         form = ProjectForm()
     
-    return render(request, 'crea_Proyecto.html', { 'form': form})
+    return render(request, 'crea_proyecto.html', { 'form': form})
 
 def delete_project(request, pk):
-    if request.method == 'POST':
-        proyecto = Proyecto.objects.get(pk=pk)
-        proyecto.delete()
+    proyecto = Proyecto.objects.get(pk=pk)
+    proyecto.delete()
     return redirect('project_list')
 
-def busqueda(request):
-    return render(request, 'Busqueda.html')
-
+#Vistas de algoritmos
 def preEDA(request):
     proyectos = Proyecto.objects.all()
-    return render(request, 'EligeEDA.html', {'projects': proyectos})
+    return render(request, 'EligeEDA.html', {'proyectos': proyectos})
 
 def prePCA(request):
     proyectos = Proyecto.objects.all()
-    return render(request, 'EligePCA.html', {'projects': proyectos})
+    return render(request, 'EligePCA.html', {'proyectos': proyectos})
+
+def preAB(request):
+    proyectos = Proyecto.objects.all()
+    return render(request, 'EligeAB.html', {'proyectos': proyectos})
 
 def PCA_(request, pk):
     proyecto = Proyecto.objects.get(pk=pk)
@@ -76,9 +78,9 @@ def PCA_(request, pk):
     context['mapaC'] = mapaC
 
     #Estandarizacion de datos
-    Estandarizar = StandardScaler()                               # Se instancia el objeto StandardScaler o MinMaxScaler 
-    NuevaMatriz = df.drop(columns=df.select_dtypes('object'))    # Se quitan las variables nominales
-    NuevaMat = NuevaMatriz.dropna() 
+    Estandarizar = StandardScaler()
+    NuevaMatriz = df.drop(columns=df.select_dtypes('object'))
+    NuevaMat = NuevaMatriz.dropna()
     MEstandarizada = Estandarizar.fit_transform(NuevaMat)     
     ME = pd.DataFrame(MEstandarizada, columns=NuevaMat.columns)
     ME2 = ME[:10]
@@ -102,15 +104,14 @@ def PCA_(request, pk):
 
     context['nComp']=nComp-1
     context['VarAc']=VarAc
-    print('Varianza acumulada:', VarAc)   
 
     #Grafica Varianza acumulada
     figV = px.line(np.cumsum(pca.explained_variance_ratio_))
+    figV.update_xaxes(title_text='Numero de componentes')
+    figV.update_yaxes(title_text='Varianza acumulada')
     # Setting layout of the figure.
     layout = {
         'title': 'Grafica varianza',
-        'xaxis_title': 'Numero de componentes', 
-        'yaxis_title': 'Varianza acumulada',
         'height': 144,
         'width': 60,
     }
@@ -120,20 +121,35 @@ def PCA_(request, pk):
 
     #Paso 6
     CargasComponentes = pd.DataFrame(abs(pca.components_[0:nComp-1]), columns=NuevaMat.columns)
-    context['CargasC']=CargasComponentes   
+    context['CargasC']=CargasComponentes
+
+    muestra = 0.50
+    n_df = df
+    for i in range(CargasComponentes.shape[1]):
+        column = CargasComponentes.columns.values[i]
+        if( np.any(CargasComponentes[column].values > muestra) == False ):
+            n_df = n_df.drop(columns=[column])
+    print_ndf = n_df[:10]
+    context['ndf']=print_ndf
+
+    size2 = n_df.shape
+    context['sizeNdf']=size2 
 
     return render(request, 'PCA.html', context)
 
 def EDA(request, pk):
     proyecto = Proyecto.objects.get(pk=pk)
     source = proyecto.data
-
+    context = {}
+    
     #Comienzo del algoritmo
     df = pd.read_csv(source)
     df2 = df[:10]
+    context['df'] = df2
     
     #Forma del df
     size = df.shape
+    context['size'] = size
     
     #Tipos de datos
     tipos = []
@@ -141,6 +157,7 @@ def EDA(request, pk):
         column = df.columns.values[i]
         value = df[column].dtype
         tipos.append(str(column) + ': ' + str(value))
+    context['tipos'] = tipos
     
     #Valores nulos
     nulos = []
@@ -148,12 +165,11 @@ def EDA(request, pk):
         column = df.columns.values[i]
         value = df[column].isnull().sum()
         nulos.append(str(column) + ': ' + str(value))
-
-    #Funcion info
-    #*PENDIENTE*
+    context['nulos'] = nulos
 
     #Resumen estadistico de variables numericas
     df3 = df.describe()
+    context['df3'] = df3
 
     #Histogramas
     histogramas = []
@@ -170,11 +186,12 @@ def EDA(request, pk):
                 'height': 144,
                 'width': 60,
             }
-            # Getting HTML needed to render the plot.
-            plot_div = plot({'data': fig, 'layout': layout}, 
-                            output_type='div')
+            
+            plot_div = plot({'data': fig, 'layout': layout}, output_type='div')
             histogramas.append(plot_div)
-    
+
+    context['plot_div'] = histogramas
+
     #Diagramas de caja
     cajas = []
     for i in range(df.shape[1]):
@@ -190,11 +207,11 @@ def EDA(request, pk):
                 'height': 240,
                 'width': 240,
             }
-            # Getting HTML needed to render the plot.
-            plot_div = plot({'data': fig, 'layout': layout}, 
-                            output_type='div')
+            
+            plot_div = plot({'data': fig, 'layout': layout}, output_type='div')
             cajas.append(plot_div)
-    
+    context['diagramsCaja'] = cajas
+
     #Verificar que el dataframe contenga variables no numericas
     try:
         df.describe(include='object')
@@ -202,11 +219,13 @@ def EDA(request, pk):
         objects = False
     else:
         objects = True
-    
+    context['flag'] = objects
+
     #Toma de decision en caso de haber variables no numericas
     if(objects == True):
         #Distribucion variables categoricas
         df4 = df.describe(include='object')
+        context['df4']=df4
         #Plots de las distribuciones
         Cat = []
         for col in df.select_dtypes(include='object'):
@@ -218,22 +237,20 @@ def EDA(request, pk):
                     'height': 240,
                     'width': 240,
                 }
-                # Getting HTML needed to render the plot.
-                plot_div = plot({'data': fig, 'layout': layout}, 
-                                output_type='div')
+                
+                plot_div = plot({'data': fig, 'layout': layout}, output_type='div')
                 Cat.append(plot_div)
-        
+
+        context['Cat']=Cat
+
         #Agrupacion por variables categoricas
         groups = []
         for col in df.select_dtypes(include='object'):
             if df[col].nunique() < 10:
-                dataG = df.groupby(col).agg(['mean']).reset_index()
+                dataG = df.groupby(col).agg(['mean'])
                 print(dataG)
                 groups.append(dataG)
-        
-        context={'plot_div': histogramas, 'df': df2, 'size' : size, 'diagramsCaja' : cajas, 'tipos': tipos, 'nulos': nulos, 'df3': df3, 'Cat' : Cat, 'df4': df4, 'flag': objects, 'groups': groups}
-    else:
-        context={'plot_div': histogramas, 'df': df2, 'size' : size, 'diagramsCaja' : cajas, 'tipos': tipos, 'nulos': nulos, 'df3': df3, 'flag': objects, 'mapaC': mapaC}
+        context['groups']=groups
     
     #Correlaciones
     correlaciones = df.corr()
@@ -247,3 +264,89 @@ def EDA(request, pk):
     mapaC = plot({'data': calor, 'layout': layout_corr}, output_type='div')
     context['mapaC'] = mapaC
     return render(request, 'EDA.html', context)
+
+def AB_P(request, pk):
+    proyecto = Proyecto.objects.get(pk=pk)
+    source = proyecto.data
+    context = {}
+    #Comienzo del algoritmo
+    df = pd.read_csv(source)
+    df2 = df[:10]
+    context['df'] = df2
+    
+    #Forma del df
+    size = df.shape
+    context['size'] = size
+    
+    #Tipos de datos
+    tipos = []
+    for i in range(df.shape[1]):
+        column = df.columns.values[i]
+        value = df[column].dtype
+        tipos.append(str(column) + ': ' + str(value))
+    context['tipos'] = tipos
+    
+    #Valores nulos
+    nulos = []
+    for i in range(df.shape[1]):
+        column = df.columns.values[i]
+        value = df[column].isnull().sum()
+        nulos.append(str(column) + ': ' + str(value))
+    context['nulos'] = nulos
+
+    #Resumen estadistico de variables numericas
+    df3 = df.describe()
+    context['df3'] = df3
+    
+    #Estandarizacion de datos
+    NuevaMatriz = df.drop(columns=df.select_dtypes('object'))    # Se quitan las variables nominales
+    NuevaMat = NuevaMatriz.dropna() 
+    ME = NuevaMat[:10]
+    context['ME']=ME
+
+    return render(request, 'AB_P.html', context)
+
+def AB_C(request, pk):
+    proyecto = Proyecto.objects.get(pk=pk)
+    source = proyecto.data
+    context = {}
+    #Comienzo del algoritmo
+    df = pd.read_csv(source)
+    df2 = df[:10]
+    context['df'] = df2
+    
+    #Forma del df
+    size = df.shape
+    context['size'] = size
+    
+    #Tipos de datos
+    tipos = []
+    for i in range(df.shape[1]):
+        column = df.columns.values[i]
+        value = df[column].dtype
+        tipos.append(str(column) + ': ' + str(value))
+    context['tipos'] = tipos
+    
+    #Valores nulos
+    nulos = []
+    for i in range(df.shape[1]):
+        column = df.columns.values[i]
+        value = df[column].isnull().sum()
+        nulos.append(str(column) + ': ' + str(value))
+    context['nulos'] = nulos
+
+    #Resumen estadistico de variables numericas
+    df3 = df.describe()
+    context['df3'] = df3
+    
+    #Estandarizacion de datos
+    NuevaMatriz = df.drop(columns=df.select_dtypes('object'))    # Se quitan las variables nominales
+    NuevaMat = NuevaMatriz.dropna() 
+    ME = NuevaMat[:10]
+    context['ME']=ME
+
+    return render(request, 'AB_C.html', context)
+
+#Vistas con ideas antiguas
+def busqueda(request):
+    return render(request, 'Busqueda.html')

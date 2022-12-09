@@ -7,39 +7,79 @@
 {% endblock %}
 
 {% block body %}
-<h2>Project list</h2>
-<p>
-  <a href="{% url 'upload_project' %}" class="btn btn-primary"
-    >Crear Proyecto</a
-  >
-</p>
-<table class="table mb-0">
-  <thead>
-    <tr>
-      <th>Nombre</th>
-      <th>Descripcion</th>
-      <th>URL</th>
-      <th>File</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for proyectos in proyectos %}
-    <tr>
-      <td>{{ proyectos.Nombre }}</td>
-      <td>{{ proyectos.descripcion }}</td>
-      <td>{{ proyectos.URL }}</td>
-      <td>{{ proyectos.data }}</td>
-      <td>
-        <form method="post" action="{% url 'delete_project' proyectos.pk %}">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+{% load crispy_forms_tags %}
+<div class="row mb-3">
+  <div>
+    <h2>Proyectos creados: </h2>
+    <p>Aqui encontrarás los proyectos que hayas creado y un boton para agregar un nuevo proyecto. ¡Animate!</p>
+  </div>    
+</div>
+<div class="row mb-3">
+  {% for proyectos in proyectos %}
+    <div class="col-sm-6 mb-3">
+      <div class="card">
+        <h5 class="card-header">{{proyectos.Nombre}}</h5>
+        <div class="card-body">
+          <h5 class="card-title">Descripcion del proyecto:</h5>
+          <p class="card-text">{{proyectos.descripcion}}</p>
+          <a href="eliminarProyecto/{{proyectos.pk}}" class="btn btn-danger">Eliminar</a>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+<div class="row mb-3">
+  <div class="col">
+    <a href="{% url 'upload_project' %}" class="btn btn-success"
+    >Crear proyecto</a>
+  </div>
+</div>
+<!-- <div class="col">
+  <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#crearProyecto"> Crear Proyecto</button>
+</div> -->
+<div class="row">
+  {% lorem 10 p random %}
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="crearProyecto" tabindex="-1" aria-labelledby="crearProyecto" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Crear Proyecto</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="POST" action="creaProyecto/" enctype="multipart/form-data">{% csrf_token %} 
+          <div class="mb-3">
+            <label for="Nombre" class="form-label">Nombre del proyecto</label>
+            <input type="text" class="form-control" id="Nombre" name="Nombre" placeholder="Ej. Prueba EDA" required>
+          </div>
+          <div class="mb-3">
+            <label for="Desc" class="form-label">Descripcion del proyecto</label>
+            <textarea class="form-control" id="Desc" name="descripcion" rows="3"></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="URL" class="form-label">URL del dataFrame</label>
+            <input type="text" class="form-control" id="URL" name="URL" placeholder="Ej. https://www.github.com/repo/data.csv">
+          </div>
+          <div class="mb-3">
+            <label for="docProy" class="form-label">DataFrame en formato CSV</label>
+            <input class="form-control" type="file" id="docProy" name="data" required>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Crear proyecto</button>
         </form>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
 {% endblock %}
 
 {% block scripts %}

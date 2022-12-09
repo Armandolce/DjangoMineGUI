@@ -5,30 +5,20 @@
 
 {% block body %}
 <h2>PCA</h2>
-<p>Elige el proyecto que quieres analizar</p>
-<table class="table mb-0">
-  <thead>
-    <tr>
-      <th>Nombre</th>
-      <th>Descripcion</th>
-      <th>Accion</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for proyecto in projects %}
-    <tr>
-      <td>{{ proyecto.Nombre }}</td>
-      <td>{{ proyecto.descripcion }}</td>
-      <td>
-        <form method="post" action="{% url 'PCA' proyecto.pk %}">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-primary">Elegir</button>
-        </form>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-<p>
-</p>
+<p>Elige el proyecto con el que quieras trabajar</p>
+<div class="row mb-3">
+  {% for proyectos in proyectos %}
+    <div class="col-sm-6 mb-3">
+      <div class="card">
+        <h5 class="card-header">{{proyectos.Nombre}}</h5>
+        <div class="card-body">
+          <h5 class="card-title">Dataframe:</h5>
+          <p class="card-text">{{proyectos.data}}</p>
+          <a href="/PCA/{{proyectos.pk}}" class="btn btn-primary">Elegir</a>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
 {% endblock %}

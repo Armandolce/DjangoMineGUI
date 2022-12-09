@@ -164,34 +164,31 @@
     <div class="col-sm-12 my-2">
       <h6>5)  Agrupación por variables categóricas: PENDIENTE</h6>
       <div class="container" style="overflow-x: auto;">
-        {% for array in groups %}
-          <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
-            <tr>
-              <th>
+        {% for i in groups %}
+        <table class="table table-striped" style="border-collapse: collapse; border-spacing: 0; width: 100%;">
+          <tr>
+            <th>
 
+            </th>
+            {% for col in i.columns %}
+              <th>
+                {{col}}
               </th>
-              {% for dfG in array %}
-                {% for col in dfG %}
-                  <th>
-                    {{col}}
-                  </th>
-                  
+            {% endfor %}
+          </tr>
+            {% for index, row in i.iterrows %}
+              <tr>
+                <th>
+                  {{index}}
+                </th>
+                {% for cell in row %}
+                  <td>
+                    {{cell}}
+                  </td>
                 {% endfor %}
-              {% endfor %}
-            </tr>
-              {% for  index, row in dfG %}
-                <tr>
-                  <th>
-                    {{index}}
-                  </th>
-                  {% for cell in row %}
-                    <td>
-                      {{cell}}
-                    </td>
-                  {% endfor %}
-                </tr>
-              {% endfor %}
-          </table>
+              </tr>
+            {% endfor %}
+        </table>
         {% endfor %}
       </div>
     </div>
