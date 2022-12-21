@@ -170,35 +170,20 @@
     </table>
   </div>
   <div class="col-sm-12">
-    <h5>Seleccion de variables menos significativas</h5>
-    <div class="container" style="overflow-x: auto;">
-      <h5>Nuevo dataframe despues de una muestra de 0.50:</h5>
-      <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
-        <tr>
-          <th>
-    
-          </th>
-          {% for col in ndf.columns %}
-            <th>
-              {{col}}
-            </th>
+    <div class="card py-2">
+      <div class=" card-body">
+        <form  class="needs-validation" novalidate action="/PCA-2/{{pk}}" method="POST"> {% csrf_token %}
+          <h5>Selecciona las variables que deseas descartar: </h5>
+          {% for col in ME.columns %}
+          <div class="form-check">
+            <input type="checkbox" name="columnas" id="option:{{col}}" value={{col}} />
+            <label for="option:{{col}}"><b>{{col}}</b></label><br />
+          </div>
           {% endfor %}
-        </tr>
-          {% for index, row in ndf.iterrows %}
-            <tr>
-              <th>
-                {{index}}
-              </th>
-              {% for cell in row %}
-                <td>
-                  {{cell}}
-                </td>
-              {% endfor %}
-            </tr>
-          {% endfor %}
-      </table>
-      <p> {{sizeNdf.0}} rows x {{sizeNdf.1}} columns</p>
-    </div>
+          <button class="btn btn-primary" type="submit">Siguiente</button>
+        </form>
+      </div>
+    </div>   
   </div>
 </div>
 

@@ -18,20 +18,18 @@ def home(request):
 #Vistas de Proyectos
 def lista_Proyectos(request):
     proyectos = Proyecto.objects.all()
-    return render(request, 'Proyectos.html', {
+    return render(request, 'Proyectos/Proyectos.html', {
         'proyectos': proyectos
     })
 
 def crea_Proyecto(request):
-    if request.method == 'POST':
-        form = ProjectForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return redirect('project_list')
-    else:
-        form = ProjectForm()
-    
-    return render(request, 'crea_proyecto.html', { 'form': form})
+    Nombre = request.POST['Nombre']
+    Desc = request.POST['descripcion']
+    URL = request.POST['URL']
+    data = request.FILES['data']
+
+    Proyecto.objects.create(Nombre=Nombre, descripcion=Desc, URL = URL, data = data)
+    return redirect('project_list')
 
 def delete_project(request, pk):
     proyecto = Proyecto.objects.get(pk=pk)
@@ -41,20 +39,26 @@ def delete_project(request, pk):
 #Vistas de algoritmos
 def preEDA(request):
     proyectos = Proyecto.objects.all()
-    return render(request, 'EligeEDA.html', {'proyectos': proyectos})
+    return render(request, 'EDA/EligeEDA.html', {'proyectos': proyectos})
 
 def prePCA(request):
     proyectos = Proyecto.objects.all()
-    return render(request, 'EligePCA.html', {'proyectos': proyectos})
+    return render(request, 'PCA/EligePCA.html', {'proyectos': proyectos})
 
-def preAB(request):
+def preAD(request):
     proyectos = Proyecto.objects.all()
-    return render(request, 'EligeAB.html', {'proyectos': proyectos})
+    return render(request, 'Arboles/EligeArb.html', {'proyectos': proyectos})
 
-def PCA_(request, pk):
+def preBA(request):
+    proyectos = Proyecto.objects.all()
+    return render(request, 'Bosques/EligeBos.html', {'proyectos': proyectos})
+
+
+def PCA_1(request, pk):
     proyecto = Proyecto.objects.get(pk=pk)
     source = proyecto.data
     context = {}
+    context['pk'] = pk
     #Comienzo del algoritmo
     df = pd.read_csv(source)
     df2 = df[:10]
@@ -68,12 +72,8 @@ def PCA_(request, pk):
     correlaciones = df.corr()
     #Mapa de calor de correlaciones
     calor = px.imshow(correlaciones, text_auto=True, aspect="auto")
-    layout_corr = {
-    'title': proyecto.Nombre,
-    'height': 240,
-    'width': 240,
-    }
-    mapaC = plot({'data': calor, 'layout': layout_corr}, output_type='div')
+
+    mapaC = plot({'data': calor}, output_type='div')
     context['corr']=correlaciones
     context['mapaC'] = mapaC
 
@@ -87,8 +87,8 @@ def PCA_(request, pk):
     context['ME']=ME2
 
     #Instancia de componente PCA
-    pca = PCA(n_components=None)     #Se instancia el objeto PCA    #pca=PCA(n_components=None), pca=PCA(.85)
-    pca.fit(MEstandarizada)        #Se obtiene los componentes
+    pca = PCA(n_components=None)
+    pca.fit(MEstandarizada)     
     pcaPrint = pca.components_
     context['pca1']=pcaPrint
 
@@ -109,13 +109,7 @@ def PCA_(request, pk):
     figV = px.line(np.cumsum(pca.explained_variance_ratio_))
     figV.update_xaxes(title_text='Numero de componentes')
     figV.update_yaxes(title_text='Varianza acumulada')
-    # Setting layout of the figure.
-    layout = {
-        'title': 'Grafica varianza',
-        'height': 144,
-        'width': 60,
-    }
-    figVar = plot({'data': figV, 'layout': layout}, output_type='div')
+    figVar = plot({'data': figV}, output_type='div')
 
     context['figVar']=figVar
 
@@ -123,19 +117,20 @@ def PCA_(request, pk):
     CargasComponentes = pd.DataFrame(abs(pca.components_[0:nComp-1]), columns=NuevaMat.columns)
     context['CargasC']=CargasComponentes
 
-    muestra = 0.50
-    n_df = df
-    for i in range(CargasComponentes.shape[1]):
-        column = CargasComponentes.columns.values[i]
-        if( np.any(CargasComponentes[column].values > muestra) == False ):
-            n_df = n_df.drop(columns=[column])
-    print_ndf = n_df[:10]
-    context['ndf']=print_ndf
+    return render(request, 'PCA/PCA.html', context)
 
-    size2 = n_df.shape
-    context['sizeNdf']=size2 
-
-    return render(request, 'PCA.html', context)
+def PCA_2(request, pk):
+    proyecto = Proyecto.objects.get(pk=pk)
+    colDrop = request.POST.getlist('columnas')
+    source = proyecto.data
+    context = {}
+    df = pd.read_csv(source)
+    nDf = df.drop(columns=colDrop)
+    context['ndf']=nDf[:10]
+    #Forma del nuevo df
+    size = nDf.shape
+    context['size']=size
+    return render(request, 'PCA/PCA2.html', context)
 
 def EDA(request, pk):
     proyecto = Proyecto.objects.get(pk=pk)
@@ -177,17 +172,8 @@ def EDA(request, pk):
         dataType = df.columns.values[i]
         if df[dataType].dtype != object:
             fig = px.histogram(df, x=df.columns[i])
-
-            # Setting layout of the figure.
-            layout = {
-                'title': df.columns[i],
-                'xaxis_title': 'X', 
-                'yaxis_title': 'Y',
-                'height': 144,
-                'width': 60,
-            }
             
-            plot_div = plot({'data': fig, 'layout': layout}, output_type='div')
+            plot_div = plot({'data': fig}, output_type='div')
             histogramas.append(plot_div)
 
     context['plot_div'] = histogramas
@@ -197,18 +183,8 @@ def EDA(request, pk):
     for i in range(df.shape[1]):
         dataType = df.columns.values[i]
         if df[dataType].dtype != object:
-            fig = px.box(df, x=df.columns[i])
-
-            # Setting layout of the figure.
-            layout = {
-                'title': df.columns[i],
-                'xaxis_title': 'X', 
-                'yaxis_title': 'Y',
-                'height': 240,
-                'width': 240,
-            }
-            
-            plot_div = plot({'data': fig, 'layout': layout}, output_type='div')
+            fig = px.box(df, x=df.columns[i])            
+            plot_div = plot({'data': fig}, output_type='div')
             cajas.append(plot_div)
     context['diagramsCaja'] = cajas
 
@@ -231,14 +207,7 @@ def EDA(request, pk):
         for col in df.select_dtypes(include='object'):
             if df[col].nunique()< 10:
                 fig = px.histogram(df, y=col)
-                # Setting layout of the figure.
-                layout = {
-                    'title': col,
-                    'height': 240,
-                    'width': 240,
-                }
-                
-                plot_div = plot({'data': fig, 'layout': layout}, output_type='div')
+                plot_div = plot({'data': fig}, output_type='div')
                 Cat.append(plot_div)
 
         context['Cat']=Cat
@@ -256,16 +225,52 @@ def EDA(request, pk):
     correlaciones = df.corr()
     #Mapa de calor de correlaciones
     calor = px.imshow(correlaciones, text_auto=True, aspect="auto")
-    layout_corr = {
-    'title': proyecto.Nombre,
-    'height': 240,
-    'width': 240,
-    }
-    mapaC = plot({'data': calor, 'layout': layout_corr}, output_type='div')
+    mapaC = plot({'data': calor}, output_type='div')
     context['mapaC'] = mapaC
-    return render(request, 'EDA.html', context)
+    return render(request, 'EDA/EDA.html', context)
 
-def AB_P(request, pk):
+def AD_P(request, pk):
+    proyecto = Proyecto.objects.get(pk=pk)
+    source = proyecto.data
+    context = {}
+    #Comienzo del algoritmo
+    df = pd.read_csv(source)
+    df2 = df[:10]
+    context['df'] = df2
+    
+    #Forma del df
+    size = df.shape
+    context['size'] = size
+    
+    #Tipos de datos
+    tipos = []
+    for i in range(df.shape[1]):
+        column = df.columns.values[i]
+        value = df[column].dtype
+        tipos.append(str(column) + ': ' + str(value))
+    context['tipos'] = tipos
+    
+    #Valores nulos
+    nulos = []
+    for i in range(df.shape[1]):
+        column = df.columns.values[i]
+        value = df[column].isnull().sum()
+        nulos.append(str(column) + ': ' + str(value))
+    context['nulos'] = nulos
+
+    #Resumen estadistico de variables numericas
+    df3 = df.describe()
+    context['df3'] = df3
+    
+    #Limpieza de datos (Nulos, categoricos)
+    NuevaMatriz = df.drop(columns=df.select_dtypes('object'))    # Se quitan las variables nominales
+    NuevaMat = NuevaMatriz.dropna() 
+    ME = NuevaMat[:10]
+    context['ME']=ME
+
+    return render(request, 'Arboles/AD_P.html', context)
+
+def AD_C(request, pk):
     proyecto = Proyecto.objects.get(pk=pk)
     source = proyecto.data
     context = {}
@@ -304,9 +309,9 @@ def AB_P(request, pk):
     ME = NuevaMat[:10]
     context['ME']=ME
 
-    return render(request, 'AB_P.html', context)
+    return render(request, 'Arboles/AD_C.html', context)
 
-def AB_C(request, pk):
+def BA_P(request, pk):
     proyecto = Proyecto.objects.get(pk=pk)
     source = proyecto.data
     context = {}
@@ -345,8 +350,57 @@ def AB_C(request, pk):
     ME = NuevaMat[:10]
     context['ME']=ME
 
-    return render(request, 'AB_C.html', context)
+    return render(request, 'Bosques/BA_P.html', context)
 
-#Vistas con ideas antiguas
+def BA_C(request, pk):
+    proyecto = Proyecto.objects.get(pk=pk)
+    source = proyecto.data
+    context = {}
+    #Comienzo del algoritmo
+    df = pd.read_csv(source)
+    df2 = df[:10]
+    context['df'] = df2
+    
+    #Forma del df
+    size = df.shape
+    context['size'] = size
+    
+    #Tipos de datos
+    tipos = []
+    for i in range(df.shape[1]):
+        column = df.columns.values[i]
+        value = df[column].dtype
+        tipos.append(str(column) + ': ' + str(value))
+    context['tipos'] = tipos
+    
+    #Valores nulos
+    nulos = []
+    for i in range(df.shape[1]):
+        column = df.columns.values[i]
+        value = df[column].isnull().sum()
+        nulos.append(str(column) + ': ' + str(value))
+    context['nulos'] = nulos
+
+    #Resumen estadistico de variables numericas
+    df3 = df.describe()
+    context['df3'] = df3
+    
+    #Estandarizacion de datos
+    NuevaMatriz = df.drop(columns=df.select_dtypes('object'))    # Se quitan las variables nominales
+    NuevaMat = NuevaMatriz.dropna() 
+    ME = NuevaMat[:10]
+    context['ME']=ME
+
+    return render(request, 'Bosques/BA_C.html', context)
+
+
+#Vistas con ideas antiguas o pruebas
 def busqueda(request):
-    return render(request, 'Busqueda.html')
+    proyectoP = Proyecto.objects.get(pk=18)
+    source = proyectoP.data
+    context = {}
+    #Comienzo del algoritmo
+    df = pd.read_csv(source)
+    df2 = df[:10]
+    context['df']=df2
+    return render(request, 'Busqueda.html', context)

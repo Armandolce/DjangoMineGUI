@@ -1,0 +1,27 @@
+Ostras pues yo vengo de otro archivo  XDDDDDDDDDDDDD
+<div class="col-sm-12" style="overflow-x: auto;">
+    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+      <tr>
+        <th>
+
+        </th>
+        {% for col in df3.columns %}
+          <th>
+           {{col}}
+          </th>
+         {% endfor %}
+       </tr>
+        {% for index, row in df3.iterrows %}
+          <tr>
+            <th>
+              {{index}}
+            </th>
+            {% for cell in row %}
+              <td>
+                {{cell}}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+     </table>
+  </div>

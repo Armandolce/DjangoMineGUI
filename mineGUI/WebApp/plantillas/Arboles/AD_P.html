@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} mineGUI | Arboles y Bosques: Pronostico {% endblock %}
+
+{% block body %}
+<div class="row">
+  <div class="col-xs-12">
+    <h1>Arboles y Bosques: Pronostico</h1>
+  </div>
+</div>
+
+<div class="row my-4">
+  <div class="container" style="overflow-x: auto;">
+    <h5>DataFrame ingresado (Primeros 10 elementos):</h5>
+    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+      <tr>
+        <th>
+
+        </th>
+        {% for col in df.columns %}
+          <th>
+            {{col}}
+          </th>
+        {% endfor %}
+      </tr>
+        {% for index, row in df.iterrows %}
+          <tr>
+            <th>
+              {{index}}
+            </th>
+            {% for cell in row %}
+              <td>
+                {{cell}}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+    </table>
+    <p> {{size.0}} rows x {{size.1}} columns</p>
+  </div>
+</div>
+
+<div class="row my-4">
+  <h5>Descripción de la estructura de los datos:</h5>
+
+  <div class="col-sm-6">
+        <h6>Tipos de datos</h6>
+          {% for columna in tipos %}  
+            <p>{{columna}}</p>
+          {% endfor %}
+  </div>
+  <div class="col-sm-6">
+    <h6>Cantidad de datos nulos por variable</h6>
+    {% for columna in nulos %}  
+      <p>{{columna}}</p>
+    {% endfor %}
+  </div>
+
+  <div class="col-sm-12" style="overflow-x: auto;">
+    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+      <tr>
+        <th>
+
+        </th>
+        {% for col in df3.columns %}
+          <th>
+           {{col}}
+          </th>
+         {% endfor %}
+       </tr>
+        {% for index, row in df3.iterrows %}
+          <tr>
+            <th>
+              {{index}}
+            </th>
+            {% for cell in row %}
+              <td>
+                {{cell}}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+     </table>
+  </div>
+</div>
+
+{% include "Arboles/test.html" %}
+
+
+{% endblock %}
+
+{% block scripts %}
+{% endblock %} 

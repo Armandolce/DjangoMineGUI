@@ -162,9 +162,9 @@
     </div>
     {% endfor %}
     <div class="col-sm-12 my-2">
-      <h6>5)  Agrupación por variables categóricas: PENDIENTE</h6>
+      <h6>5)  Agrupación por variables categóricas</h6>
+      {% for i in groups %}
       <div class="container" style="overflow-x: auto;">
-        {% for i in groups %}
         <table class="table table-striped" style="border-collapse: collapse; border-spacing: 0; width: 100%;">
           <tr>
             <th>
@@ -189,8 +189,8 @@
               </tr>
             {% endfor %}
         </table>
-        {% endfor %}
       </div>
+    {% endfor %}
     </div>
   {% endif %}
 

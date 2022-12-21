@@ -22,27 +22,20 @@
         <div class="card-body">
           <h5 class="card-title">Descripcion del proyecto:</h5>
           <p class="card-text">{{proyectos.descripcion}}</p>
-          <a href="eliminarProyecto/{{proyectos.pk}}" class="btn btn-danger">Eliminar</a>
+          <a href="eliminarProyecto/{{proyectos.pk}}" class="btn btn-danger"> <i class="bi bi-trash"></i> Eliminar </a>
         </div>
       </div>
     </div>
   {% endfor %}
 </div>
-<div class="row mb-3">
-  <div class="col">
-    <a href="{% url 'upload_project' %}" class="btn btn-success"
-    >Crear proyecto</a>
-  </div>
-</div>
-<!-- <div class="col">
+
+<div class="col">
   <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#crearProyecto"> Crear Proyecto</button>
-</div> -->
-<div class="row">
-  {% lorem 10 p random %}
 </div>
 
+
 <!-- Modal -->
-<div class="modal fade" id="crearProyecto" tabindex="-1" aria-labelledby="crearProyecto" aria-hidden="true">
+<div class="modal fade" id="crearProyecto" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="crearProyecto" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">

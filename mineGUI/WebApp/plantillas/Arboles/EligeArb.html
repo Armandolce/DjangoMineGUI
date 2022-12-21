@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %} mineGUI | Pre PCA {% endblock %}
+{% block title %} mineGUI | Pre AD {% endblock %}
 
 {% block body %}
-<h2>Arboles y Bosques</h2>
+<h2>Arboles de decision</h2>
 <p>Elige el proyecto con el que quieras trabajar y el tipo de algoritmo que deseas:</p>
 <div class="row mb-3">
   {% for proyectos in proyectos %}
@@ -14,8 +14,8 @@
         <div class="card-body">
           <h5 class="card-title">Dataframe:</h5>
           <p class="card-text">{{proyectos.data}}</p>
-          <a href="/AB_P/{{proyectos.pk}}" class="btn btn-primary">Pronostico</a>
-          <a href="/AB_C/{{proyectos.pk}}" class="btn btn-primary">Clasificacion</a>
+          <a href="/AD_P/{{proyectos.pk}}" class="btn btn-primary">Pronostico</a>
+          <a href="/AD_C/{{proyectos.pk}}" class="btn btn-primary">Clasificacion</a>
         </div>
       </div>
     </div>

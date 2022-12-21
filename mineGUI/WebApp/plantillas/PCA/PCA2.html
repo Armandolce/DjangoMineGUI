@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} mineGUI | PCA-2 {% endblock %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block body %}
+<div class="col-sm-12">
+    <h5>Seleccion de variables menos significativas</h5>
+    <div class="container" style="overflow-x: auto;">
+      <h6>Nuevo dataframe:</h6>
+      <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+        <tr>
+          <th>
+    
+          </th>
+          {% for col in ndf.columns %}
+            <th>
+              {{col}}
+            </th>
+          {% endfor %}
+        </tr>
+          {% for index, row in ndf.iterrows %}
+            <tr>
+              <th>
+                {{index}}
+              </th>
+              {% for cell in row %}
+                <td>
+                  {{cell}}
+                </td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+      </table>
+      <p> {{size.0}} rows x {{size.1}} columns</p>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
