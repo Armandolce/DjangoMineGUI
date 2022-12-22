@@ -85,6 +85,44 @@
   </div>
 </div>
 
+<div class="row my-4">
+  <div class="col-sm-12">
+    <h5> Seleccion de caracteristicas.</h5>
+  </div>
+  <div class="container" style="overflow-x: auto;">
+    <h5>Dataframe de las correlaciones:</h5>
+    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+      <tr>
+        <th>
+  
+        </th>
+        {% for col in corr.columns %}
+          <th>
+            {{col}}
+          </th>
+        {% endfor %}
+      </tr>
+        {% for index, row in corr.iterrows %}
+          <tr>
+            <th>
+              {{index}}
+            </th>
+            {% for cell in row %}
+              <td>
+                {{cell}}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+    </table>
+  </div>
+  <div class="col-sm-12">
+    <h6>Mapa de calor de correlaciones:</h6>
+    {%  autoescape off %}
+    {{ mapaC }}
+    {% endautoescape %}
+  </div>
+</div>
 
 {% endblock %}
 
