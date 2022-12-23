@@ -1,4 +1,7 @@
 from django.shortcuts import render, redirect
+from pathlib import Path
+import os
+
 from plotly.offline import plot
 import plotly.graph_objects as go
 import plotly.express as px
@@ -9,11 +12,16 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 from sklearn import model_selection
 from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+
 from sklearn.tree import export_text
 
 from .forms import ProjectForm
 from .models import Proyecto
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Create your views here.
 def home(request):
@@ -304,12 +312,18 @@ def AD_P_2(request, pk):
 
 
     #Seleccion variables Predictoras y de pronostico
+    aux = pd.DataFrame(NuevaMat[predictoras])
     X = np.array(NuevaMat[predictoras])
-    Xout = pd.DataFrame(X)
+    Xout = pd.DataFrame(data=X, columns=aux.columns.values)
+    Xout.to_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/X.csv'), index=False)
     context['X'] = Xout[:10]
 
     Y = np.array(NuevaMat[pronosticar])
     Yout = pd.DataFrame(Y)
+    
+    Yout.to_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/Y.csv'), index=False)
+
+    
     context['Y'] = Yout[:10]
 
     #Division de los datos
@@ -344,9 +358,7 @@ def AD_P_2(request, pk):
 
     #Criterios
     criterios = []
-    print('Criterio: \n', PronosticoAD.criterion)
-    print('Importancia variables: \n', PronosticoAD.feature_importances_)
-    print('Score: %.4f' % r2_score(Y_test, Y_Pronostico))
+    criterios.append(PronosticoAD.criterion)
     criterios.append(mean_absolute_error(Y_test, Y_Pronostico))
     criterios.append(mean_squared_error(Y_test, Y_Pronostico))
     criterios.append(mean_squared_error(Y_test, Y_Pronostico, squared=False))
@@ -361,15 +373,45 @@ def AD_P_2(request, pk):
 
     #Reporte o arbol en texto
     Reporte = export_text(PronosticoAD, feature_names = predictoras)
-    #print(Reporte)
     RepOut = []
     RepOut = Reporte.split("\n")
-    #print(RepOut)
     context['reportes'] = RepOut
+
+    #Eleccion para nuevo pronostico
+    predictorasOut = NuevaMat[predictoras]
+    context['Pred'] = predictorasOut[:10]
 
 
     return render(request, 'Arboles/AD_P-2.html', context)
 
+def AD_P_3(request,pk):
+    proyecto = Proyecto.objects.get(pk=pk)
+    context = {}
+    Val = request.POST.getlist('NPron')
+    X = pd.read_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/X.csv'))
+    Y = pd.read_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/Y.csv'))
+
+    #Division de los datos
+    X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y, 
+                                                                        test_size = 0.2, 
+                                                                        random_state = 0, 
+                                                                        shuffle = True)
+    
+    #Entrenamiento
+    PronosticoAD = DecisionTreeRegressor(random_state=0)
+    PronosticoAD.fit(X_train, Y_train)
+
+    col = list(X.columns)
+    datoOut = {}
+    for i in range(X.shape[1]):
+        datoOut[col[i]] = int(Val[i])
+    Npron = pd.DataFrame(datoOut, index=[0])
+    context['DfN'] = Npron
+    resultado = PronosticoAD.predict(Npron)
+    print(resultado)
+    context['resultado'] = resultado
+
+    return render(request, 'Arboles/AD_P-3.html', context)
 
 def AD_C(request, pk):
     proyecto = Proyecto.objects.get(pk=pk)
@@ -481,12 +523,18 @@ def BA_P_2(request, pk):
 
 
     #Seleccion variables Predictoras y de pronostico
+    aux = pd.DataFrame(NuevaMat[predictoras])
     X = np.array(NuevaMat[predictoras])
-    Xout = pd.DataFrame(X)
+    Xout = pd.DataFrame(data=X, columns=aux.columns.values)
+    Xout.to_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/X.csv'), index=False)
     context['X'] = Xout[:10]
 
     Y = np.array(NuevaMat[pronosticar])
     Yout = pd.DataFrame(Y)
+    
+    Yout.to_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/Y.csv'), index=False)
+
+    
     context['Y'] = Yout[:10]
 
     #Division de los datos
@@ -500,11 +548,11 @@ def BA_P_2(request, pk):
     context['Xtest'] = Xtest[:10]
 
     #Entrenamiento
-    PronosticoAD = DecisionTreeRegressor(random_state=0)
-    PronosticoAD.fit(X_train, Y_train)
+    PronosticoBA = RandomForestRegressor(random_state=0)
+    PronosticoBA.fit(X_train, Y_train)
 
     #Se genera el pronóstico
-    Y_Pronostico = PronosticoAD.predict(X_test)
+    Y_Pronostico = PronosticoBA.predict(X_test)
     Ypronostico = pd.DataFrame(Y_Pronostico)
     context['YPron'] = Ypronostico[:10]
 
@@ -521,9 +569,7 @@ def BA_P_2(request, pk):
 
     #Criterios
     criterios = []
-    print('Criterio: \n', PronosticoAD.criterion)
-    print('Importancia variables: \n', PronosticoAD.feature_importances_)
-    print('Score: %.4f' % r2_score(Y_test, Y_Pronostico))
+    criterios.append(PronosticoBA.criterion)
     criterios.append(mean_absolute_error(Y_test, Y_Pronostico))
     criterios.append(mean_squared_error(Y_test, Y_Pronostico))
     criterios.append(mean_squared_error(Y_test, Y_Pronostico, squared=False))
@@ -532,21 +578,54 @@ def BA_P_2(request, pk):
 
     #Dataframe de la importancia de variables
     Importancia = pd.DataFrame({'Variable': list(NuevaMat[predictoras]),
-                            'Importancia': PronosticoAD.feature_importances_}).sort_values('Importancia', ascending=False)
+                            'Importancia': PronosticoBA.feature_importances_}).sort_values('Importancia', ascending=False)
     context['Imp'] = Importancia
     print(Importancia)
 
     #Reporte o arbol en texto
-    Reporte = export_text(PronosticoAD, feature_names = predictoras)
-    #print(Reporte)
+    Estimador = PronosticoBA.estimators_[50]
+    
+    Reporte = export_text(Estimador, feature_names = predictoras)
     RepOut = []
     RepOut = Reporte.split("\n")
-    #print(RepOut)
     context['reportes'] = RepOut
+
+    #Eleccion para nuevo pronostico
+    predictorasOut = NuevaMat[predictoras]
+    context['Pred'] = predictorasOut[:10]
 
 
     return render(request, 'Bosques/BA_P-2.html', context)
 
+def BA_P_3(request,pk):
+    proyecto = Proyecto.objects.get(pk=pk)
+    context = {}
+    context['pk'] = pk
+    Val = request.POST.getlist('NPron')
+    X = pd.read_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/X.csv'))
+    Y = pd.read_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/Y.csv'))
+
+    #Division de los datos
+    X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y, 
+                                                                        test_size = 0.2, 
+                                                                        random_state = 0, 
+                                                                        shuffle = True)
+    
+    #Entrenamiento
+    PronosticoAD = RandomForestRegressor(random_state=0)
+    PronosticoAD.fit(X_train, Y_train)
+
+    col = list(X.columns)
+    datoOut = {}
+    for i in range(X.shape[1]):
+        datoOut[col[i]] = int(Val[i])
+    Npron = pd.DataFrame(datoOut, index=[0])
+    context['DfN'] = Npron
+    resultado = PronosticoAD.predict(Npron)
+    print(resultado)
+    context['resultado'] = resultado
+
+    return render(request, 'Bosques/BA_P-3.html', context)
 
 def BA_C(request, pk):
     proyecto = Proyecto.objects.get(pk=pk)

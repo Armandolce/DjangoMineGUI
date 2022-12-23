@@ -166,9 +166,10 @@
 </div>
 
 <div class="row my-4">
-  <p> MAE : {{criterios.0}}</p>
-  <p> MSE : {{criterios.1}}</p>
-  <p> RMSE : {{criterios.2}}</p>
+  <p> <b>Criterio:</b> <br>{{criterios.0}}</p>
+  <p> <b>MAE: </b> {{criterios.1}}</p>
+  <p> <b>MSE: </b> {{criterios.2}}</p>
+  <p> <b>RMSE: </b> {{criterios.3}}</p>
   
 </div>
 
@@ -202,14 +203,31 @@
   </div>
 </div>
 
-<h5>Intento de reporte: </h5>
+<h5>Reporte del arbol: </h5>
 <div class="row my-4" style="height: 400px; overflow-y: scroll;">
   {% for reporte in reportes %}
   <p style="line-height: 40%;">{{reporte}}</p>
   {% endfor %}
-  
 </div>
 
+<div class="row my-4">
+  <div class="col-sm-12">
+    <div class="card py-2">
+      <div class=" card-body">
+        <form  class="needs-validation" novalidate action="/AD_P-3/{{pk}}" method="POST"> {% csrf_token %}
+          <h5>Selecciona los valores para el nuevo pronostico: </h5>
+          {% for col in Pred.columns %}
+          <div class="form-check">
+            <input type="number" min="0" oninput="validity.valid||(value='');" name="NPron" id="option:{{col}}"/>
+            <label for="option:{{col}}"><b>{{col}}</b></label><br/>
+          </div>
+          {% endfor %}
+          <button class="btn btn-primary" type="submit">Siguiente</button>
+        </form>
+      </div>
+    </div>   
+  </div>
+</div>
 
 <!-- {% include "Arboles/test.html" %} -->
 

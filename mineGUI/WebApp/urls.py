@@ -15,11 +15,14 @@ urlpatterns = [
     path('EligeAD/',views.preAD),
     path('AD_P/<int:pk>', views.AD_P, name='AD_P'),
     path('AD_P-2/<int:pk>', views.AD_P_2, name='AD_P2'),
+    path('AD_P-3/<int:pk>', views.AD_P_3, name='AD_P3'),
+    
     path('AD_C/<int:pk>', views.AD_C, name='AD_C'),
     
     path('EligeBA/',views.preBA),
     path('BA_P/<int:pk>', views.BA_P, name='BA_P'),
     path('BA_P-2/<int:pk>', views.BA_P_2, name='BA_P2'),
+    path('BA_P-3/<int:pk>', views.BA_P_3, name='BA_P3'),
     
     path('BA_C/<int:pk>', views.BA_C, name='BA_C'),
     

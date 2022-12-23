@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %} mineGUI | Arboles y Bosques: Pronostico {% endblock %}
+{% block title %} mineGUI | Bosques Aleatorios: Pronostico {% endblock %}
 
 {% block body %}
 <div class="row">
@@ -83,6 +83,69 @@
         {% endfor %}
      </table>
   </div>
+</div>
+
+<div class="row my-4">
+  <div class="col-sm-12">
+    <h5> Seleccion de caracteristicas.</h5>
+  </div>
+  <div class="container" style="overflow-x: auto;">
+    <h5>Dataframe de las correlaciones:</h5>
+    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+      <tr>
+        <th>
+  
+        </th>
+        {% for col in corr.columns %}
+          <th>
+            {{col}}
+          </th>
+        {% endfor %}
+      </tr>
+        {% for index, row in corr.iterrows %}
+          <tr>
+            <th>
+              {{index}}
+            </th>
+            {% for cell in row %}
+              <td>
+                {{cell}}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+    </table>
+  </div>
+  <div class="col-sm-12">
+    <h6>Mapa de calor de correlaciones:</h6>
+    {%  autoescape off %}
+    {{ mapaC }}
+    {% endautoescape %}
+  </div>
+</div>
+
+<div class="col-sm-12">
+  <div class="card py-2">
+    <div class=" card-body">
+      <form  class="needs-validation" novalidate action="/BA_P-2/{{pk}}" method="POST"> {% csrf_token %}
+        <h5>Selecciona las variables predictoras: </h5>
+        {% for col in ME.columns %}
+        <div class="form-check">
+          <input type="checkbox" name="predictora" id="option:{{col}}" value={{col}} />
+          <label for="option:{{col}}"><b>{{col}}</b></label><br />
+        </div>
+        {% endfor %}
+        <h5>De igual manera, selecciona las variable a pronosticar: </h5>
+        {% for col in ME.columns %}
+        <div class="form-check">
+          <input type="radio" name="pronostico" id="option:{{col}}" value={{col}} />
+          <label for="option:{{col}}"><b>{{col}}</b></label><br />
+        </div>
+        {% endfor %}
+        <button class="btn btn-primary" type="submit">Siguiente</button>
+      </form>
+    </div>
+  </div>   
 </div>
 
 
