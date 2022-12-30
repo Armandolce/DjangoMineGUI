@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %} mineGUI | Arboles de decision: Pronostico-2 {% endblock %}
+{% block title %} mineGUI | Bosques Aleatorios: Clasificacion-2 {% endblock %}
 
 {% block body %}
 <div class="row">
   <div class="col-xs-12">
-    <h1>Arboles y Bosques: Pronostico</h1>
+    <h1>Bosques Aleatorios: Clasificacion</h1>
   </div>
 </div>
 
@@ -57,37 +57,6 @@
          {% endfor %}
        </tr>
         {% for index, row in Y.iterrows %}
-          <tr>
-            <th>
-              {{index}}
-            </th>
-            {% for cell in row %}
-              <td>
-                {{cell}}
-              </td>
-            {% endfor %}
-          </tr>
-        {% endfor %}
-     </table>
-  </div>
-</div>
-
-<div class="row my-4">
-
-  <div class="col-sm-12" style="overflow-x: auto;">
-    <h5>Division de los datos:</h5>
-    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
-      <tr>
-        <th>
-
-        </th>
-        {% for col in Xtest.columns %}
-          <th>
-           {{col}}
-          </th>
-         {% endfor %}
-       </tr>
-        {% for index, row in Xtest.iterrows %}
           <tr>
             <th>
               {{index}}
@@ -166,10 +135,64 @@
 </div>
 
 <div class="row my-4">
+  <div class="col-sm-12" style="overflow-x: auto;">
+    <h5>Matriz de clasificacion:</h5>
+    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+      <tr>
+        <th>
+
+        </th>
+        {% for col in MClas.columns %}
+          <th>
+           {{col}}
+          </th>
+         {% endfor %}
+       </tr>
+        {% for index, row in MClas.iterrows %}
+          <tr>
+            <th>
+              {{index}}
+            </th>
+            {% for cell in row %}
+              <td>
+                {{cell}}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+     </table>
+  </div>
+</div>
+
+<div class="row my-4">
   <p> <b>Criterio:</b> <br>{{criterios.0}}</p>
-  <p> <b>MAE: </b> {{criterios.1}}</p>
-  <p> <b>MSE: </b> {{criterios.2}}</p>
-  <p> <b>RMSE: </b> {{criterios.3}}</p>
+  <p> <b>Exactitud: </b> {{criterios.1}}</p>
+  <div class="col-sm-12" style="overflow-x: auto;">
+    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+      <tr>
+        <th>
+
+        </th>
+        {% for col in ReporteClas.columns %}
+          <th>
+           {{col}}
+          </th>
+         {% endfor %}
+       </tr>
+        {% for index, row in ReporteClas.iterrows %}
+          <tr>
+            <th>
+              {{index}}
+            </th>
+            {% for cell in row %}
+              <td>
+                {{cell|floatformat:2 }}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+     </table>
+  </div> 
   
 </div>
 
@@ -214,8 +237,8 @@
   <div class="col-sm-12">
     <div class="card py-2">
       <div class=" card-body">
-        <form  class="needs-validation" novalidate action="/AD_P-3/{{pk}}" method="POST"> {% csrf_token %}
-          <h5>Selecciona los valores para la clasificacion: </h5>
+        <form  class="needs-validation" novalidate action="/BA_C-3/{{pk}}" method="POST"> {% csrf_token %}
+          <h5>Selecciona los valores para el nuevo pronostico: </h5>
           {% for col in Pred.columns %}
           <div class="form-check">
             <input type="number" min="0" oninput="validity.valid||(value='');" name="NClas" id="option:{{col}}"/>
@@ -228,6 +251,7 @@
     </div>   
   </div>
 </div>
+
 
 
 {% endblock %}

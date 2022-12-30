@@ -18,6 +18,8 @@ urlpatterns = [
     path('AD_P-3/<int:pk>', views.AD_P_3, name='AD_P3'),
     
     path('AD_C/<int:pk>', views.AD_C, name='AD_C'),
+    path('AD_C-2/<int:pk>', views.AD_C_2, name='AD_C2'),
+    path('AD_C-3/<int:pk>', views.AD_C_3, name='AD_C3'),
     
     path('EligeBA/',views.preBA),
     path('BA_P/<int:pk>', views.BA_P, name='BA_P'),
@@ -25,6 +27,8 @@ urlpatterns = [
     path('BA_P-3/<int:pk>', views.BA_P_3, name='BA_P3'),
     
     path('BA_C/<int:pk>', views.BA_C, name='BA_C'),
+    path('BA_C-2/<int:pk>', views.BA_C_2, name='BA_C2'),
+    path('BA_C-3/<int:pk>', views.BA_C_3, name='BA_C3'),
     
     #Proyectos
     path('Proyectos/', views.lista_Proyectos, name='project_list'),

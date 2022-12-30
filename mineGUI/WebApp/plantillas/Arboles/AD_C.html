@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %} mineGUI | Arboles y Bosques: Pronostico {% endblock %}
+{% block title %} mineGUI | Arboles de decision: Clasificacion {% endblock %}
 
 {% block body %}
 <div class="row">
   <div class="col-xs-12">
-    <h1>Arboles y Bosques: Pronostico</h1>
+    <h1>Arboles de decision: Clasificacion</h1>
   </div>
 </div>
 
@@ -123,6 +123,31 @@
     {% endautoescape %}
   </div>
 </div>
+
+<div class="col-sm-12">
+  <div class="card py-2">
+    <div class=" card-body">
+      <form  class="needs-validation" novalidate action="/AD_C-2/{{pk}}" method="POST"> {% csrf_token %}
+        <h5>Selecciona las variables predictoras: </h5>
+        {% for col in ME.columns %}
+        <div class="form-check">
+          <input type="checkbox" name="predictora" id="option:{{col}}" value={{col}} />
+          <label for="option:{{col}}"><b>{{col}}</b></label><br />
+        </div>
+        {% endfor %}
+        <h5>De igual manera, selecciona la variable a clasificar: </h5>
+        {% for col in df.columns %}
+        <div class="form-check">
+          <input type="radio" name="pronostico" id="option:{{col}}" value={{col}} />
+          <label for="option:{{col}}"><b>{{col}}</b></label><br />
+        </div>
+        {% endfor %}
+        <button class="btn btn-primary" type="submit">Siguiente</button>
+      </form>
+    </div>
+  </div>   
+</div>
+
 
 {% endblock %}
 
