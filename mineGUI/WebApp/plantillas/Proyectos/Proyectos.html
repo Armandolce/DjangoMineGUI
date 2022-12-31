@@ -14,23 +14,26 @@
     <p>Aqui encontrarás los proyectos que hayas creado y un boton para agregar un nuevo proyecto. ¡Animate!</p>
   </div>    
 </div>
-<div class="row mb-3">
+<div class="row  justify-content-center mb-3">
   {% for proyectos in proyectos %}
-    <div class="col-sm-6 mb-3">
-      <div class="card">
+    <div class="col-sm-4 text-center mb-3">
+      <div class="card h-100">
         <h5 class="card-header">{{proyectos.Nombre}}</h5>
         <div class="card-body">
           <h5 class="card-title">Descripcion del proyecto:</h5>
           <p class="card-text">{{proyectos.descripcion}}</p>
+        </div>
+        <div class="card-footer">
           <a href="eliminarProyecto/{{proyectos.pk}}" class="btn btn-danger"> <i class="bi bi-trash"></i> Eliminar </a>
         </div>
       </div>
     </div>
   {% endfor %}
 </div>
-
-<div class="col">
-  <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#crearProyecto"> Crear Proyecto</button>
+<div class="row justify-content-center">
+  <div class="col mb-3">
+    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#crearProyecto"><i class="bi bi-plus-circle"></i> Crear Proyecto</button>
+  </div>
 </div>
 
 
@@ -57,7 +60,7 @@
             <input type="text" class="form-control" id="URL" name="URL" placeholder="Ej. https://www.github.com/repo/data.csv">
           </div>
           <div class="mb-3">
-            <label for="docProy" class="form-label">DataFrame en formato CSV</label>
+            <label for="docProy" class="form-label">  DataFrame en formato CSV</label>
             <input class="form-control" type="file" id="docProy" name="data" required>
           </div>
 

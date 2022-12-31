@@ -56,22 +56,34 @@ def delete_project(request, pk):
     proyecto.delete()
     return redirect('project_list')
 
-#Vistas previas de algoritmos
-def preEDA(request):
+#Vista previa de algoritmos
+def selector(request, Alg):
+    context = {}
+    Flag = False
+    
+    if Alg == 'SC':
+        AlgSC = 'Segmentacion y Clasificacion'
+        context['AlgN'] = AlgSC
+        context['Alg'] = Alg
+    else:
+        context['AlgN'] = Alg
+        context["Alg"] = Alg
+    
+    if Alg  == 'AD':
+        AlgAB = 'Arboles de decision'
+        context['AlgN'] = AlgAB
+        Flag = True
+    elif Alg == 'BA':
+        AlgBA = 'Bosques Aleatorios'
+        context['AlgN'] = AlgBA
+        Flag = True
+    else :
+        Flag = False
+    context['flag'] = Flag
     proyectos = Proyecto.objects.all()
-    return render(request, 'EDA/EligeEDA.html', {'proyectos': proyectos})
 
-def prePCA(request):
-    proyectos = Proyecto.objects.all()
-    return render(request, 'PCA/EligePCA.html', {'proyectos': proyectos})
-
-def preAD(request):
-    proyectos = Proyecto.objects.all()
-    return render(request, 'Arboles/EligeArb.html', {'proyectos': proyectos})
-
-def preBA(request):
-    proyectos = Proyecto.objects.all()
-    return render(request, 'Bosques/EligeBos.html', {'proyectos': proyectos})
+    context['proyectos'] = proyectos
+    return render(request, "Selector.html", context)
 
 #Algoritmos
 def EDA(request, pk):
@@ -953,6 +965,9 @@ def BA_C_3(request,pk):
 
     return render(request, 'Bosques/BA_C-3.html', context)
 
+
+def SegClas(request, pk):
+    return render(request, 'SegClas/Clusters.html')
 
 #Vistas con ideas antiguas o pruebas
 def busqueda(request):

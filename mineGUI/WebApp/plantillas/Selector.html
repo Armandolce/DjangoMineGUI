@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} mineGUI | Selector: {{AlgN}} {% endblock %}
+
+{% block body %}
+<h2>{{AlgN}}</h2>
+<p>Elige el proyecto con el que quieras trabajar y el tipo de algoritmo que deseas:</p>
+{% if flag %}
+    <p> <strong>Nota:</strong> Es importante tener al menos una variable categorica en tu dataset si deseas realizar el algoritmo de clasificacion</p>
+{% endif %}
+<div class="row justify-content-center">
+  {% for proyectos in proyectos %}
+    <div class="col-sm-4 mb-3 text-center">
+        <div class="card h-100">
+            <h5 class="card-header">{{proyectos.Nombre}}</h5>
+            <div class="card-body">
+                <h5 class="card-title">Dataframe:</h5>
+                <p class="card-text">{{proyectos.data}}</p>
+            </div>
+            <div class="card-footer">
+                {% if flag %}
+                    <a href="/{{Alg}}_P/{{proyectos.pk}}" class="btn btn-primary mb-2">Pronostico</a>
+                    <a href="/{{Alg}}_C/{{proyectos.pk}}" class="btn btn-primary mb-2">Clasificacion</a>
+                {% else %}
+                    <a href="/{{Alg}}/{{proyectos.pk}}" class="btn btn-primary">Elegir</a>
+                {% endif %}
+            </div>
+        </div>
+      </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

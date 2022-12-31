@@ -31,26 +31,36 @@
           <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
               
-              <li class="nav-item px-3">
-                <a class="nav-link" href="/Proyectos"><i class="bi bi-question-lg"></i> Proyectos </a>
-              </li>
-              
-              <li class="nav-item px-3">
-                <a class="nav-link " href="/EligeEDA"><i class="bi-tools"></i> EDA </a>
+              <li class="nav-item px-3 dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-pie-chart"></i> Algoritmos
+                </a>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a class="dropdown-item" href="/Selector/EDA"><i class="bi bi-zoom-in"></i> EDA </a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item "  href="/Selector/PCA"><i class="bi-tools"></i> PCA </a>
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                    <a class="dropdown-item " href="/Selector/AD"><i class="bi bi-tree-fill"></i> Arboles de decision </a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item " href="/Selector/BA"><i class="bi bi-diagram-3"></i></i> Bosques Aleatorios </a>
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                    <a class="dropdown-item " href="/Selector/SC"><i class="bi bi-signpost-split"></i> Segmentacion y Clasificacion </a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item disabled" href="/EligeSVM"><i class="bi-clipboard-data"></i> SVM </a>
+                  </li>
+                </ul>
               </li>
 
               <li class="nav-item px-3">
-                <a class="nav-link"  href="/EligePCA"><i class="bi-person"></i> PCA </a>
-              </li>
-
-              <li class="nav-item px-3">
-                <a class="nav-link" href="/EligeAD"><i class="bi-clipboard-data"></i> Arboles de decision </a>
-              </li>
-
-              <li class="nav-item px-3">
-                <a class="nav-link" href="/EligeBA"><i class="bi-clipboard-data"></i> Bosques Aleatorios </a>
-              </li>
-
+                <a class="nav-link" href="/Proyectos"><i class="bi bi-clipboard-data"></i> Proyectos activos</a>
               </li>
             </ul>
           </div>
