@@ -26,6 +26,10 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
 from sklearn.tree import export_text
 
+from sklearn.cluster import KMeans
+from sklearn.metrics import pairwise_distances_argmin_min
+
+
 from .models import Proyecto
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -967,7 +971,227 @@ def BA_C_3(request,pk):
 
 
 def SegClas(request, pk):
-    return render(request, 'SegClas/Clusters.html')
+    proyecto = Proyecto.objects.get(pk=pk)
+    source = proyecto.data
+    context = {}
+    context['pk'] = pk
+    #Comienzo del algoritmo
+    df = pd.read_csv(source)
+    for i in range(df.shape[1]):
+        df.columns.values[i] = df.columns.values[i].replace(" ","_")
+    
+    df2 = df[:10]
+    context['df'] = df2
+    
+    #Forma del df
+    size = df.shape
+    context['size'] = size
+    
+    #Tipos de datos
+    tipos = []
+    for i in range(df.shape[1]):
+        column = df.columns.values[i]
+        value = df[column].dtype
+        tipos.append(str(column) + ': ' + str(value))
+    context['tipos'] = tipos
+    
+    #Valores nulos
+    nulos = []
+    for i in range(df.shape[1]):
+        column = df.columns.values[i]
+        value = df[column].isnull().sum()
+        nulos.append(str(column) + ': ' + str(value))
+    context['nulos'] = nulos
+
+    #Resumen estadistico de variables numericas
+    df3 = df.describe()
+    context['df3'] = df3
+    
+    #Limpieza de datos categoricos
+    NuevaMatriz = df.drop(columns=df.select_dtypes('object'))
+    ME = NuevaMatriz[:10]
+    context['ME']=ME
+
+    #Correlaciones
+    correlaciones = df.corr()
+    #Mapa de calor de correlaciones
+    calor = px.imshow(correlaciones, text_auto=True, aspect="auto")
+
+    mapaC = plot({'data': calor}, output_type='div')
+    context['corr']=correlaciones
+    context['mapaC'] = mapaC
+
+    return render(request, 'SegClas/Clusters.html', context)
+
+def SegClas_2(request, pk):
+    proyecto = Proyecto.objects.get(pk=pk)
+    context = {}
+    context['pk'] = pk
+    #Obtencion de Var Cat y Pred
+    Elim = request.POST.getlist('Elim')
+    Modelo = request.POST.getlist('Modelo')
+    
+    #Paso usual
+    source = proyecto.data
+    df = pd.read_csv(source)
+    for i in range(df.shape[1]):
+        df.columns.values[i] = df.columns.values[i].replace(" ","_")
+    
+    #Limpiamos y especificamos las variables del modelo
+    NuevaMatriz = df.drop(columns=Elim)
+    MatrizDef = NuevaMatriz[Modelo]
+    NuevaMat = MatrizDef.dropna() 
+    
+    #Estandarizacion de datos
+    Estandarizar = StandardScaler()
+    MEstandarizada = Estandarizar.fit_transform(NuevaMat)     
+    ME = pd.DataFrame(MEstandarizada, columns=NuevaMat.columns)
+    ME2 = ME[:10]
+    context['ME']=ME2
+
+    #Definición de k clusters para K-means
+    #Se utiliza random_state para inicializar el generador interno de números aleatorios
+    SSE = []
+    for i in range(2, 10):
+        km = KMeans(n_clusters=i, random_state=0)
+        km.fit(MEstandarizada)
+        SSE.append(km.inertia_)
+
+    #Grafica Elbow
+    figElb = px.line(SSE)
+    figElb.update_layout(
+        title="Elbow Method",
+        xaxis_title="Cantidad de clusters *k*",
+        yaxis_title="SSE"
+    )
+
+    figVar = plot({'data': figElb}, output_type='div')
+    context['figVar']=figVar
+
+    #Se crean las etiquetas de los elementos en los clusters
+    MParticional = KMeans(n_clusters=4, random_state=0).fit(MEstandarizada)
+    MParticional.predict(MEstandarizada)
+    context['Mpart'] = MParticional.labels_
+    print(MParticional.labels_)
+
+    NuevaMat['clusterP'] = MParticional.labels_
+    context['DfClust'] = NuevaMat[:10]
+    print(NuevaMat)
+
+    #Cantidad de elementos en los clusters
+    ClustEl =NuevaMat.groupby(['clusterP'])['clusterP'].count()
+    ClustOut = pd.DataFrame(ClustEl).transpose()
+    context['ClustEl'] = ClustOut
+    print(NuevaMat.groupby(['clusterP'])['clusterP'].count())
+
+    context['DfClust2'] = NuevaMat[NuevaMat.clusterP == 1].head(10)
+    #Forma del df
+    sizeC = NuevaMat[NuevaMat.clusterP == 1].shape
+    context['size'] = sizeC
+    print(NuevaMat[NuevaMat.clusterP == 1])
+
+    CentroidesP = NuevaMat.groupby('clusterP').mean()
+    context['CentroidesP'] = CentroidesP
+    print(CentroidesP) 
+
+    #Grafica 3d de plotly aqui
+    figScat = px.scatter_3d(NuevaMat, color = NuevaMat['clusterP'], hover_name=NuevaMat['clusterP'])
+    
+    figScatOut = plot({'data': figScat}, output_type='div')
+    context['figVar2']=figScatOut
+
+    #Seleccion variables Predictoras y de pronostico
+    aux = pd.DataFrame(NuevaMat)
+    X = np.array(NuevaMat)
+    Xout = pd.DataFrame(data=X, columns=aux.columns.values)
+    Xout.to_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/X.csv'), index=False)
+    context['X'] = Xout[:10]
+
+    Y = np.array(NuevaMat[['clusterP']])
+    Yout = pd.DataFrame(Y)
+    
+    Yout.to_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/Y.csv'), index=False)
+
+    
+    context['Y'] = Yout[:10]
+
+    #Division de los datos
+    X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(X, Y, 
+                                                                                test_size = 0.2, 
+                                                                                random_state = 0,
+                                                                                shuffle = True)
+
+    print(len(X_train))
+    print(len(X_validation))
+    
+    #ClasificacionBA = RandomForestClassifier(random_state=0)
+    #ClasificacionBA.fit(X_train, Y_train)
+
+    ClasificacionBA = RandomForestClassifier(n_estimators=105,
+                                            max_depth=8, 
+                                            min_samples_split=4, 
+                                            min_samples_leaf=2, 
+                                            random_state=1234)
+    ClasificacionBA.fit(X_train, Y_train)
+    
+    #Clasificación final 
+    Y_ClasificacionBA = ClasificacionBA.predict(X_validation)
+    print(Y_ClasificacionBA)
+
+
+    #Comparacion entre pronostico y prueba
+    Valores = pd.DataFrame(Y_validation, Y_ClasificacionBA)
+    Valores2 = Valores.reset_index()
+    ValoresOut = Valores2.rename(columns={Valores2.columns[0]: 'Prueba', Valores2.columns[1]: 'Pronostico'})
+    #print(ValoresOut)
+    context['Valores'] = ValoresOut[:10]
+
+    #Obtencion del ajuste de Bondad
+    Score = accuracy_score(Y_validation, Y_ClasificacionBA)
+    context['Score'] = Score
+
+    #Matriz de clasificacion
+    ModeloClasificacion1 = ClasificacionBA.predict(X_validation)
+    Matriz_Clasificacion1 = pd.crosstab(Y_validation.ravel(), 
+                                   ModeloClasificacion1, 
+                                   rownames=['Reales'], 
+                                   colnames=['Clasificación']) 
+    print(Matriz_Clasificacion1)
+    context['MClas']=Matriz_Clasificacion1
+
+    #Criterios
+    criterios = []
+    criterios.append(ClasificacionBA.criterion)
+    criterios.append(accuracy_score(Y_validation, Y_ClasificacionBA))
+    context['criterios'] = criterios
+    ReporteC =classification_report(Y_validation, Y_ClasificacionBA, output_dict=True)
+    RepClas = pd.DataFrame(ReporteC).transpose()
+    context['ReporteClas'] = RepClas
+
+    #Dataframe de la importancia de variables
+    Importancia = pd.DataFrame({'Variable': list(NuevaMat),
+                            'Importancia': ClasificacionBA.feature_importances_}).sort_values('Importancia', ascending=False)
+    context['Imp'] = Importancia
+    print(Importancia)
+
+    #Reporte o arbol en texto
+
+    #Reporte o arbol en texto
+    Estimador = ClasificacionBA.estimators_[50]
+
+    Reporte = export_text(Estimador, feature_names = NuevaMat.columns.all() )
+    RepOut = []
+    RepOut = Reporte.split("\n")
+    context['reportes'] = RepOut
+
+    #Eleccion para nuevo pronostico
+    predictorasOut = NuevaMat
+    context['Pred'] = predictorasOut[:10]
+
+    #Falta rendimiento
+
+
+    return render(request, 'SegClas/Clusters2.html', context)
 
 #Vistas con ideas antiguas o pruebas
 def busqueda(request):
