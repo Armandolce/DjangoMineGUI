@@ -28,9 +28,16 @@ from sklearn.tree import export_text
 
 from sklearn.cluster import KMeans
 from sklearn.metrics import pairwise_distances_argmin_min
+from kneed import KneeLocator
 
+from sklearn.preprocessing import label_binarize
+from sklearn.metrics import roc_curve, auc
 
 from .models import Proyecto
+
+# import matplotlib.pyplot as plt
+
+# plt.plot()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -1058,7 +1065,7 @@ def SegClas_2(request, pk):
         SSE.append(km.inertia_)
 
     #Grafica Elbow
-    figElb = px.line(SSE)
+    figElb = px.line(SSE, markers=True)
     figElb.update_layout(
         title="Elbow Method",
         xaxis_title="Cantidad de clusters *k*",
@@ -1068,8 +1075,11 @@ def SegClas_2(request, pk):
     figVar = plot({'data': figElb}, output_type='div')
     context['figVar']=figVar
 
+    kl = KneeLocator(range(2, 10), SSE, curve="convex", direction="decreasing")
+    print(kl.elbow)
+
     #Se crean las etiquetas de los elementos en los clusters
-    MParticional = KMeans(n_clusters=4, random_state=0).fit(MEstandarizada)
+    MParticional = KMeans(n_clusters=kl.elbow, random_state=0).fit(MEstandarizada)
     MParticional.predict(MEstandarizada)
     context['Mpart'] = MParticional.labels_
     print(MParticional.labels_)
@@ -1101,15 +1111,14 @@ def SegClas_2(request, pk):
     context['figVar2']=figScatOut
 
     #Seleccion variables Predictoras y de pronostico
-    aux = pd.DataFrame(NuevaMat)
-    X = np.array(NuevaMat)
+    aux = pd.DataFrame(NuevaMat.loc[:, NuevaMat.columns != 'clusterP'])
+    X = np.array(NuevaMat.loc[:, NuevaMat.columns != 'clusterP'])
     Xout = pd.DataFrame(data=X, columns=aux.columns.values)
     Xout.to_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/X.csv'), index=False)
     context['X'] = Xout[:10]
 
     Y = np.array(NuevaMat[['clusterP']])
     Yout = pd.DataFrame(Y)
-    
     Yout.to_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/Y.csv'), index=False)
 
     
@@ -1120,9 +1129,6 @@ def SegClas_2(request, pk):
                                                                                 test_size = 0.2, 
                                                                                 random_state = 0,
                                                                                 shuffle = True)
-
-    print(len(X_train))
-    print(len(X_validation))
     
     #ClasificacionBA = RandomForestClassifier(random_state=0)
     #ClasificacionBA.fit(X_train, Y_train)
@@ -1136,7 +1142,6 @@ def SegClas_2(request, pk):
     
     #Clasificación final 
     Y_ClasificacionBA = ClasificacionBA.predict(X_validation)
-    print(Y_ClasificacionBA)
 
 
     #Comparacion entre pronostico y prueba
@@ -1156,12 +1161,12 @@ def SegClas_2(request, pk):
                                    ModeloClasificacion1, 
                                    rownames=['Reales'], 
                                    colnames=['Clasificación']) 
-    print(Matriz_Clasificacion1)
     context['MClas']=Matriz_Clasificacion1
 
     #Criterios
     criterios = []
     criterios.append(ClasificacionBA.criterion)
+    print('Importancia variables: \n', ClasificacionBA.feature_importances_)
     criterios.append(accuracy_score(Y_validation, Y_ClasificacionBA))
     context['criterios'] = criterios
     ReporteC =classification_report(Y_validation, Y_ClasificacionBA, output_dict=True)
@@ -1169,29 +1174,85 @@ def SegClas_2(request, pk):
     context['ReporteClas'] = RepClas
 
     #Dataframe de la importancia de variables
-    Importancia = pd.DataFrame({'Variable': list(NuevaMat),
+    Importancia = pd.DataFrame({'Variable': list(NuevaMat.loc[:, NuevaMat.columns != 'clusterP']),
                             'Importancia': ClasificacionBA.feature_importances_}).sort_values('Importancia', ascending=False)
     context['Imp'] = Importancia
-    print(Importancia)
+    #print(Importancia)
 
     #Reporte o arbol en texto
 
     #Reporte o arbol en texto
     Estimador = ClasificacionBA.estimators_[50]
 
-    Reporte = export_text(Estimador, feature_names = NuevaMat.columns.all() )
+    Reporte = export_text(Estimador, feature_names = list(NuevaMat.loc[:, NuevaMat.columns != 'clusterP']))
     RepOut = []
     RepOut = Reporte.split("\n")
     context['reportes'] = RepOut
 
     #Eleccion para nuevo pronostico
-    predictorasOut = NuevaMat
-    context['Pred'] = predictorasOut[:10]
+    context['Pred'] = Modelo
 
     #Falta rendimiento
+    y_score = ClasificacionBA.predict_proba(X_validation)
+    y_test_bin = label_binarize(Y_validation, classes=[0,
+                                                    1, 
+                                                    2, 
+                                                    3])
+    n_classes = y_test_bin.shape[1]
 
-
+    fpr = dict()
+    tpr = dict()
+    roc_auc = dict()
+    AUC = []
+    for i in range(n_classes):
+        fpr[i], tpr[i], _ = roc_curve(y_test_bin[:, i], y_score[:, i])
+        if i == 0 :
+            figAUC = px.line(x=fpr[i], y=tpr[i])
+            figAUC.update_xaxes(range=[-0.05, 1.05])
+            figAUC.update_yaxes(range=[-0.05, 1.05])
+        else:
+            figAUC.add_scatter(x=fpr[i], y=tpr[i])
+        AUC.append('AUC para la clase {}: {}'.format(i+1, auc(fpr[i], tpr[i])))
+    figAUCout = plot({'data': figAUC}, output_type='div')
+    context['textAUC'] = AUC
+    context['AUC'] = figAUCout
     return render(request, 'SegClas/Clusters2.html', context)
+
+def SegClas_3(request,pk):
+    proyecto = Proyecto.objects.get(pk=pk)
+    context = {}
+    context['pk'] = pk
+    Val = request.POST.getlist('NClas')
+    X = pd.read_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/X.csv'))
+    Y = pd.read_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/Y.csv'))
+
+    #Division de los datos
+    X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(X, Y, 
+                                                                                test_size = 0.2, 
+                                                                                random_state = 0,
+                                                                                shuffle = True)
+    
+    #ClasificacionBA = RandomForestClassifier(random_state=0)
+    #ClasificacionBA.fit(X_train, Y_train)
+
+    ClasificacionBA = RandomForestClassifier(n_estimators=105,
+                                            max_depth=8, 
+                                            min_samples_split=4, 
+                                            min_samples_leaf=2, 
+                                            random_state=1234)
+    ClasificacionBA.fit(X_train, Y_train)
+    
+    col = list(X.columns)
+    datoOut = {}
+    for i in range(X.shape[1]):
+        datoOut[col[i]] = int(Val[i])
+    Npron = pd.DataFrame(datoOut, index=[0])
+    context['DfN'] = Npron
+    resultado = ClasificacionBA.predict(Npron)
+    print(resultado)
+    context['resultado'] = resultado
+
+    return render(request, 'SegClas/Clusters3.html', context)
 
 #Vistas con ideas antiguas o pruebas
 def busqueda(request):

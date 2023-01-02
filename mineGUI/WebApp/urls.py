@@ -29,6 +29,7 @@ urlpatterns = [
     
     path('SC/<int:pk>',views.SegClas, name='SC'),
     path('SC_2/<int:pk>',views.SegClas_2, name='SC_2'),
+    path('SC_3/<int:pk>',views.SegClas_3, name='SC_3'),
 
     #Proyectos
     path('Proyectos/', views.lista_Proyectos, name='project_list'),
