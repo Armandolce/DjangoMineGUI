@@ -33,6 +33,9 @@ from kneed import KneeLocator
 from sklearn.preprocessing import label_binarize
 from sklearn.metrics import roc_curve, auc
 
+from sklearn.svm import SVC                         #Support vector classifier
+from sklearn.metrics import RocCurveDisplay
+
 from .models import Proyecto
 
 # import matplotlib.pyplot as plt
@@ -88,7 +91,7 @@ def selector(request, Alg):
         AlgBA = 'Bosques Aleatorios'
         context['AlgN'] = AlgBA
         Flag = True
-    else :
+    else:
         Flag = False
     context['flag'] = Flag
     proyectos = Proyecto.objects.all()
@@ -1253,6 +1256,153 @@ def SegClas_3(request,pk):
     context['resultado'] = resultado
 
     return render(request, 'SegClas/Clusters3.html', context)
+
+def SVM(request, pk):
+    proyecto = Proyecto.objects.get(pk=pk)
+    source = proyecto.data
+    context = {}
+    context['pk'] = pk
+    #Comienzo del algoritmo
+    df = pd.read_csv(source)
+    for i in range(df.shape[1]):
+        df.columns.values[i] = df.columns.values[i].replace(" ","_")
+    
+    df2 = df[:10]
+    context['df'] = df2
+    
+    #Forma del df
+    size = df.shape
+    context['size'] = size
+    
+    #Tipos de datos
+    tipos = []
+    for i in range(df.shape[1]):
+        column = df.columns.values[i]
+        value = df[column].dtype
+        tipos.append(str(column) + ': ' + str(value))
+    context['tipos'] = tipos
+    
+    #Valores nulos
+    nulos = []
+    for i in range(df.shape[1]):
+        column = df.columns.values[i]
+        value = df[column].isnull().sum()
+        nulos.append(str(column) + ': ' + str(value))
+    context['nulos'] = nulos
+
+    #Resumen estadistico de variables numericas
+    df3 = df.describe()
+    context['df3'] = df3
+    
+    #Limpieza de datos categoricos
+    NuevaMatriz = df.drop(columns=df.select_dtypes('object'))
+    ME = NuevaMatriz[:10]
+    context['ME']=ME
+
+    #Correlaciones
+    correlaciones = df.corr()
+    #Mapa de calor de correlaciones
+    calor = px.imshow(correlaciones, text_auto=True, aspect="auto")
+
+    mapaC = plot({'data': calor}, output_type='div')
+    context['corr']=correlaciones
+    context['mapaC'] = mapaC
+
+    return render(request, 'SVM/SVM.html', context)
+
+def SVM_2(request,pk):
+    proyecto = Proyecto.objects.get(pk=pk)
+    context = {}
+    context['pk'] = pk
+    #Obtencion de Var Cat y Pred
+    predictoras = request.POST.getlist('predictora')
+    pronosticar = request.POST['pronostico']
+    
+    #Paso usual
+    source = proyecto.data
+    df = pd.read_csv(source)
+    
+    #Limpiamos de nuevo Xd'nt
+    #NuevaMatriz = df.drop(columns=df.select_dtypes('object'))
+    NuevaMat = df.dropna() 
+
+
+    #Seleccion variables Predictoras y de pronostico
+    aux = pd.DataFrame(NuevaMat[predictoras])
+    X = np.array(NuevaMat[predictoras])
+    Xout = pd.DataFrame(data=X, columns=aux.columns.values)
+    Xout.to_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/X.csv'), index=False)
+    context['X'] = Xout[:10]
+
+    Y = np.array(NuevaMat[pronosticar])
+    Yout = pd.DataFrame(Y)
+    
+    Yout.to_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/Y.csv'), index=False)
+
+    
+    context['Y'] = Yout[:10]
+
+    #Division de los datos
+    X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(X, Y, 
+                                                                                test_size = 0.2, 
+                                                                                random_state = 0,
+                                                                                shuffle = True)
+    
+    #Primer tipo de kernel: Lineal
+    ModeloSVM_1 = SVC(kernel='linear')
+    ModeloSVM_1.fit(X_train, Y_train)
+
+    #Clasificaciones agregadas
+    Clasificaciones_1 = ModeloSVM_1.predict(X_validation)
+    print(Clasificaciones_1)
+    pd.DataFrame(Clasificaciones_1)
+
+    #Coomparacion entre Yvalidation y Clasif1
+    Clasificaciones = pd.DataFrame(Y_validation, Clasificaciones_1)
+    print(Clasificaciones)
+
+    #Se calcula la exactitud promedio de la validación
+    print(ModeloSVM_1.score(X_validation, Y_validation))
+
+    #Matriz de clasificacion
+    Clasificaciones_1 = ModeloSVM_1.predict(X_validation)
+    Matriz_Clasificacion = pd.crosstab(Y_validation.ravel(), 
+                                    Clasificaciones_1, 
+                                    rownames=['Real'], 
+                                    colnames=['Clasificación']) 
+    print(Matriz_Clasificacion)
+    context['MClas']=Matriz_Clasificacion
+
+    #Criterios
+    criterios = []
+    print("Exactitud", ModeloSVM_1.score(X_validation, Y_validation))
+    criterios.append(ModeloSVM_1.score(X_validation, Y_validation))
+    context['criterios'] = criterios
+    ReporteC =classification_report(Y_validation, Clasificaciones_1, output_dict=True)
+    RepClas = pd.DataFrame(ReporteC).transpose()
+    context['ReporteClas'] = RepClas
+
+    #Dataframe de los vectores de soporte
+    VectoresSoporte_1 = ModeloSVM_1.support_vectors_
+    VectSup = pd.DataFrame(VectoresSoporte_1)
+    context['VectSup'] = VectSup[:10]
+    print(VectSup)
+
+    #Vectores de soporte
+    print('Número de vectores de soporte: \n', ModeloSVM_1.n_support_)
+    print('Vectores de soporte: \n', ModeloSVM_1.support_)
+
+    #Grafica AUC de aqui
+    CurvaROC = RocCurveDisplay.from_estimator(ModeloSVM_1, X_validation, Y_validation, name="SVM")
+    figROC1 = px.line(CurvaROC)
+    figROC1out = plot({'data': figROC1}, output_type='div')
+    context['ROC1'] = figROC1out
+    #Eleccion para nuevo pronostico
+    predictorasOut = NuevaMat[predictoras]
+    context['Pred'] = predictorasOut[:10]
+
+
+    return render(request, 'SVM/SVM2.html', context)
 
 #Vistas con ideas antiguas o pruebas
 def busqueda(request):
