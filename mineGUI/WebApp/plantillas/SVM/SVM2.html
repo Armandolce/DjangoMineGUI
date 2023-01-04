@@ -6,7 +6,7 @@
 {% block body %}
 <div class="row">
   <div class="col-xs-12">
-    <h1>SVM</h1>
+    <h1>SVM: {{AlgName}}</h1>
   </div>
 </div>
 
@@ -73,21 +73,21 @@
 </div>
 
 <div class="row my-4">
-
+  <h5>Clasificacion generada:</h5>
+    <p>{{Clas1}}</p>
   <div class="col-sm-12" style="overflow-x: auto;">
-    <h5>Pronostico generado:</h5>
     <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
       <tr>
         <th>
 
         </th>
-        {% for col in YPron.columns %}
+        {% for col in ClasDf1.columns %}
           <th>
            {{col}}
           </th>
          {% endfor %}
        </tr>
-        {% for index, row in YPron.iterrows %}
+        {% for index, row in ClasDf1.iterrows %}
           <tr>
             <th>
               {{index}}
@@ -120,7 +120,7 @@
         {% for index, row in Valores.iterrows %}
           <tr>
             <th>
-              
+              {{index}}
             </th>
             {% for cell in row %}
               <td>
@@ -130,7 +130,7 @@
           </tr>
         {% endfor %}
      </table>
-     <h3>Ajuste de bondad del modelo: {{ Score|floatformat:4 }}</h3>
+     <h3>Exactitud promedio de la validación: {{ Score }}</h3>
   </div>
 </div>
 
@@ -198,7 +198,7 @@
 
 <div class="row my-4">
   <div class="col-sm-12" style="overflow-x: auto;">
-    <h5>Importancia de cada variable:</h5>
+    <h5>Vectores de soporte:</h5>
     <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
       <tr>
         <th>
@@ -224,6 +224,10 @@
         {% endfor %}
      </table>
   </div>
+  <div class="col-sm-12">
+    <p>Número de vectores de soporte: {{NSup}}</p>
+    <p>Vectores de soporte: <br> {{VectList}}</p>
+  </div>
 </div>
 
 <div class="col-sm-12">
@@ -236,7 +240,7 @@
   <div class="col-sm-12">
     <div class="card py-2">
       <div class=" card-body">
-        <form  class="needs-validation" novalidate action="/BA_C-3/{{pk}}" method="POST"> {% csrf_token %}
+        <form  class="needs-validation" novalidate action="/SVM_3/{{pk}}/{{type}}" method="POST"> {% csrf_token %}
           <h5>Selecciona los valores para el nuevo pronostico: </h5>
           {% for col in Pred.columns %}
           <div class="form-check">

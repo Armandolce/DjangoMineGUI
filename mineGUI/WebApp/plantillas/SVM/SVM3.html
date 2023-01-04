@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} mineGUI | SVM-3 {% endblock %}
+
+{% block body %}
+<div class="row">
+  <div class="col-xs-12">
+    <h1>SVM: {{AlgName}}</h1>
+  </div>
+</div>
+
+<div class="row my-4">
+  <div class="container" style="overflow-x: auto;">
+    <h5>DataFrame de los datos ingresados:</h5>
+    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+      <tr>
+        <th>
+
+        </th>
+        {% for col in DfN.columns %}
+          <th>
+            {{col}}
+          </th>
+        {% endfor %}
+      </tr>
+        {% for index, row in DfN.iterrows %}
+          <tr>
+            <th>
+              {{index}}
+            </th>
+            {% for cell in row %}
+              <td>
+                {{cell}}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+    </table>
+  </div>
+</div>
+
+
+<div class="row my-4">
+  <p> <b>Clasificacion:</b> <br>{{resultado.0}}</p>  
+</div>
+
+<div class="col py-5">
+  <a class="btn btn-secondary" href="/SVM/{{pk}}/{{type}}"> Volver a comenzar algoritmo</a>
+  <a class="btn btn-success" href="/Selector/SVM"> Finalizar</a>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+{% endblock %} 

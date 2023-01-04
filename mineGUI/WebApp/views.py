@@ -74,6 +74,7 @@ def delete_project(request, pk):
 def selector(request, Alg):
     context = {}
     Flag = False
+    FlagSVM = False
     
     if Alg == 'SC':
         AlgSC = 'Segmentacion y Clasificacion'
@@ -93,7 +94,16 @@ def selector(request, Alg):
         Flag = True
     else:
         Flag = False
+    
+    if Alg  == 'SVM':
+        AlgAB = 'Maquinas de soporte vectorial'
+        context['AlgN'] = AlgAB
+        FlagSVM = True
+    else:
+        FlagSVM = False
+
     context['flag'] = Flag
+    context['flagSVM'] = FlagSVM
     proyectos = Proyecto.objects.all()
 
     context['proyectos'] = proyectos
@@ -1257,11 +1267,23 @@ def SegClas_3(request,pk):
 
     return render(request, 'SegClas/Clusters3.html', context)
 
-def SVM(request, pk):
+def SVM(request, pk, algType):
     proyecto = Proyecto.objects.get(pk=pk)
     source = proyecto.data
     context = {}
     context['pk'] = pk
+    context['type'] = algType
+
+    match algType:
+        case 'L':
+            context['AlgName'] = 'Lineal'
+        case 'P':
+            context['AlgName'] = 'Polinomial'
+        case 'RBF':
+            context['AlgName'] = 'RBF -Función de Base Radial-'
+        case 'SGM':
+            context['AlgName'] = 'Sigmoide'
+
     #Comienzo del algoritmo
     df = pd.read_csv(source)
     for i in range(df.shape[1]):
@@ -1310,10 +1332,12 @@ def SVM(request, pk):
 
     return render(request, 'SVM/SVM.html', context)
 
-def SVM_2(request,pk):
+def SVM_2(request,pk, algType):
     proyecto = Proyecto.objects.get(pk=pk)
     context = {}
     context['pk'] = pk
+    context['type'] = algType
+
     #Obtencion de Var Cat y Pred
     predictoras = request.POST.getlist('predictora')
     pronosticar = request.POST['pronostico']
@@ -1348,20 +1372,36 @@ def SVM_2(request,pk):
                                                                                 random_state = 0,
                                                                                 shuffle = True)
     
-    #Primer tipo de kernel: Lineal
-    ModeloSVM_1 = SVC(kernel='linear')
-    ModeloSVM_1.fit(X_train, Y_train)
+    #Eleccion del tipo de algoritmo
+    match algType:
+        case 'L':
+            context['AlgName'] = 'Lineal'
+            ModeloSVM_1 = SVC(kernel='linear')
+        case 'P':
+            context['AlgName'] = 'Polinomial'
+            ModeloSVM_1 = SVC(kernel='poly', degree=3)
+        case 'RBF':
+            context['AlgName'] = 'RBF -Función de Base Radial-'
+            ModeloSVM_1 = SVC(kernel='rbf')
+        case 'SGM':
+            context['AlgName'] = 'Sigmoide'
+            ModeloSVM_1 = SVC(kernel='sigmoid')
 
+    ModeloSVM_1.fit(X_train, Y_train)
     #Clasificaciones agregadas
     Clasificaciones_1 = ModeloSVM_1.predict(X_validation)
-    print(Clasificaciones_1)
-    pd.DataFrame(Clasificaciones_1)
+    context['Clas1']= Clasificaciones_1
+    Clas1Df = pd.DataFrame(Clasificaciones_1)
+    context['ClasDf1'] = Clas1Df[:10]
 
     #Coomparacion entre Yvalidation y Clasif1
     Clasificaciones = pd.DataFrame(Y_validation, Clasificaciones_1)
+    context['Valores'] = Clasificaciones[:10]
     print(Clasificaciones)
 
     #Se calcula la exactitud promedio de la validación
+    Score = ModeloSVM_1.score(X_validation, Y_validation)
+    context['Score'] = Score
     print(ModeloSVM_1.score(X_validation, Y_validation))
 
     #Matriz de clasificacion
@@ -1389,20 +1429,63 @@ def SVM_2(request,pk):
     print(VectSup)
 
     #Vectores de soporte
+    NSup = ModeloSVM_1.n_support_
+    context['NSup'] = NSup
+    VectList = ModeloSVM_1.support_
+    context['VectList'] = VectList
+    
     print('Número de vectores de soporte: \n', ModeloSVM_1.n_support_)
     print('Vectores de soporte: \n', ModeloSVM_1.support_)
 
     #Grafica AUC de aqui
-    CurvaROC = RocCurveDisplay.from_estimator(ModeloSVM_1, X_validation, Y_validation, name="SVM")
-    figROC1 = px.line(CurvaROC)
-    figROC1out = plot({'data': figROC1}, output_type='div')
-    context['ROC1'] = figROC1out
-    #Eleccion para nuevo pronostico
     predictorasOut = NuevaMat[predictoras]
     context['Pred'] = predictorasOut[:10]
 
 
     return render(request, 'SVM/SVM2.html', context)
+
+def SVM_3(request,pk, algType):
+    proyecto = Proyecto.objects.get(pk=pk)
+    context = {}
+    context['pk'] = pk
+    context['type'] = algType
+    Val = request.POST.getlist('NClas')
+    X = pd.read_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/X.csv'))
+    Y = pd.read_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/Y.csv'))
+
+    #Division de los datos
+    X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(X, Y, 
+                                                                                test_size = 0.2, 
+                                                                                random_state = 0,
+                                                                                shuffle = True)
+    
+    #Eleccion del tipo de algoritmo
+    match algType:
+        case 'L':
+            context['AlgName'] = 'Lineal'
+            ModeloSVM_1 = SVC(kernel='linear')
+        case 'P':
+            context['AlgName'] = 'Polinomial'
+            ModeloSVM_1 = SVC(kernel='poly', degree=3)
+        case 'RBF':
+            context['AlgName'] = 'RBF -Función de Base Radial-'
+            ModeloSVM_1 = SVC(kernel='rbf')
+        case 'SGM':
+            context['AlgName'] = 'Sigmoide'
+            ModeloSVM_1 = SVC(kernel='sigmoid')
+    ModeloSVM_1.fit(X_train, Y_train)
+    
+    col = list(X.columns)
+    datoOut = {}
+    for i in range(X.shape[1]):
+        datoOut[col[i]] = int(Val[i])
+    Npron = pd.DataFrame(datoOut, index=[0])
+    context['DfN'] = Npron
+    resultado = ModeloSVM_1.predict(Npron)
+    print(resultado)
+    context['resultado'] = resultado
+
+    return render(request, 'SVM/SVM3.html', context)
 
 #Vistas con ideas antiguas o pruebas
 def busqueda(request):

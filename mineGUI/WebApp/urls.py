@@ -32,8 +32,9 @@ urlpatterns = [
     path('SC_2/<int:pk>',views.SegClas_2, name='SC_2'),
     path('SC_3/<int:pk>',views.SegClas_3, name='SC_3'),
 
-    path('SVM/<int:pk>', views.SVM, name='SVM'),
-    path('SVM_2/<int:pk>', views.SVM_2, name='SVM'),
+    path('SVM/<int:pk>/<str:algType>', views.SVM, name='SVM'),
+    path('SVM_2/<int:pk>/<str:algType>', views.SVM_2, name='SVM2'),
+    path('SVM_3/<int:pk>/<str:algType>', views.SVM_3, name='SVM3'),
 
     #Proyectos
     path('Proyectos/', views.lista_Proyectos, name='project_list'),

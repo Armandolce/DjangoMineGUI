@@ -6,7 +6,7 @@
 {% block body %}
 <div class="row">
   <div class="col-xs-12">
-    <h1>SVM</h1>
+    <h1>SVM : {{AlgName}}</h1>
   </div>
 </div>
 
@@ -127,7 +127,7 @@
 <div class="col-sm-12">
   <div class="card py-2">
     <div class=" card-body">
-      <form  class="needs-validation" novalidate action="/SVM_2/{{pk}}" method="POST"> {% csrf_token %}
+      <form  class="needs-validation" novalidate action="/SVM_2/{{pk}}/{{type}}" method="POST"> {% csrf_token %}
         <h5>Selecciona las variables predictoras: </h5>
         {% for col in ME.columns %}
         <div class="form-check">
