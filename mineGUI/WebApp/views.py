@@ -1089,7 +1089,15 @@ def SegClas_2(request, pk):
     context['figVar']=figVar
 
     kl = KneeLocator(range(2, 10), SSE, curve="convex", direction="decreasing")
+    context['knee']= kl.elbow
     print(kl.elbow)
+
+    #Lista dummy para en numero de clases en las curvas
+    num = []
+    for i in range (kl.elbow):
+        num.append(i)
+
+    print(num)
 
     #Se crean las etiquetas de los elementos en los clusters
     MParticional = KMeans(n_clusters=kl.elbow, random_state=0).fit(MEstandarizada)
@@ -1118,8 +1126,8 @@ def SegClas_2(request, pk):
     print(CentroidesP) 
 
     #Grafica 3d de plotly aqui
-    figScat = px.scatter_3d(NuevaMat, color = NuevaMat['clusterP'], hover_name=NuevaMat['clusterP'])
-    
+    figScat = px.scatter_3d(data_frame =NuevaMat, x=MEstandarizada[:,0], y=MEstandarizada[:,1], z=MEstandarizada[:,2], color = NuevaMat['clusterP'], hover_name=NuevaMat['clusterP'], symbol='clusterP')
+    figScat.add_scatter3d(x=MParticional.cluster_centers_[:, 0], y=MParticional.cluster_centers_[:, 1], z=MParticional.cluster_centers_[:, 2], mode='markers')
     figScatOut = plot({'data': figScat}, output_type='div')
     context['figVar2']=figScatOut
 
@@ -1207,10 +1215,7 @@ def SegClas_2(request, pk):
 
     #Falta rendimiento
     y_score = ClasificacionBA.predict_proba(X_validation)
-    y_test_bin = label_binarize(Y_validation, classes=[0,
-                                                    1, 
-                                                    2, 
-                                                    3])
+    y_test_bin = label_binarize(Y_validation, classes=num)
     n_classes = y_test_bin.shape[1]
 
     fpr = dict()
@@ -1224,7 +1229,7 @@ def SegClas_2(request, pk):
             figAUC.update_xaxes(range=[-0.05, 1.05])
             figAUC.update_yaxes(range=[-0.05, 1.05])
         else:
-            figAUC.add_scatter(x=fpr[i], y=tpr[i])
+            figAUC.add_scatter(x=fpr[i], y=tpr[i], mode='lines')
         AUC.append('AUC para la clase {}: {}'.format(i+1, auc(fpr[i], tpr[i])))
     figAUCout = plot({'data': figAUC}, output_type='div')
     context['textAUC'] = AUC

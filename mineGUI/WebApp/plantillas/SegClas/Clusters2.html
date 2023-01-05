@@ -46,7 +46,7 @@
   {%  autoescape off %}
   {{ figVar }}
   {% endautoescape %}
-  
+  <h5>Elbow obtenido: {{knee}}</h5>
   <div class="col">
     <h5>Etiquetas de los elementos en el cluster:</h5>
     {{Mpart}}
@@ -304,7 +304,6 @@
           </tr>
         {% endfor %}
      </table>
-     <h3>Ajuste de bondad del modelo: {{ Score|floatformat:4 }}</h3>
   </div>
 </div>
 
