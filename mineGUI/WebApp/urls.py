@@ -12,10 +12,12 @@ urlpatterns = [
     path('PCA/<int:pk>', views.PCA_1, name='PCA'),
     path('PCA-2/<int:pk>', views.PCA_2, name='PCA2'),
     
+    path('ADPError/<int:pk>', views.ADPErrror, name='ErrorP'),
     path('AD_P/<int:pk>', views.AD_P, name='AD_P'),
     path('AD_P-2/<int:pk>', views.AD_P_2, name='AD_P2'),
     path('AD_P-3/<int:pk>', views.AD_P_3, name='AD_P3'),
     
+    path('ADCError/<int:pk>', views.ADCErrror, name='ErrorC'),
     path('AD_C/<int:pk>', views.AD_C, name='AD_C'),
     path('AD_C-2/<int:pk>', views.AD_C_2, name='AD_C2'),
     path('AD_C-3/<int:pk>', views.AD_C_3, name='AD_C3'),

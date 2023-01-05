@@ -38,9 +38,56 @@ from sklearn.metrics import RocCurveDisplay
 
 from .models import Proyecto
 
-# import matplotlib.pyplot as plt
 
-# plt.plot()
+def showDatos(pk):
+    proyecto = Proyecto.objects.get(pk=pk)
+    source = proyecto.data
+    context = {}
+    context['pk'] = pk
+    #Comienzo del algoritmo
+    df = pd.read_csv(source)
+    df2 = df[:10]
+    context['df'] = df2
+    
+    #Forma del df
+    size = df.shape
+    context['size'] = size
+    
+    #Tipos de datos
+    tipos = []
+    for i in range(df.shape[1]):
+        column = df.columns.values[i]
+        value = df[column].dtype
+        tipos.append(str(column) + ': ' + str(value))
+    context['tipos'] = tipos
+    
+    #Valores nulos
+    nulos = []
+    for i in range(df.shape[1]):
+        column = df.columns.values[i]
+        value = df[column].isnull().sum()
+        nulos.append(str(column) + ': ' + str(value))
+    context['nulos'] = nulos
+
+    #Resumen estadistico de variables numericas
+    df3 = df.describe()
+    context['df3'] = df3
+    
+    #Limpieza de datos categoricos
+    NuevaMatriz = df.drop(columns=df.select_dtypes('object'))
+    ME = NuevaMatriz[:10]
+    context['ME']=ME
+
+    #Correlaciones
+    correlaciones = df.corr()
+    #Mapa de calor de correlaciones
+    calor = px.imshow(correlaciones, text_auto=True, aspect="auto")
+
+    mapaC = plot({'data': calor}, output_type='div')
+    context['corr']=correlaciones
+    context['mapaC'] = mapaC
+
+    return(context) 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -338,6 +385,10 @@ def AD_P(request, pk):
 
     return render(request, 'Arboles/AD_P.html', context)
 
+def ADPErrror(request, pk):
+    context = showDatos(pk)
+    return render(request, 'Arboles/ADPError.html', context)
+
 def AD_P_2(request, pk):
     proyecto = Proyecto.objects.get(pk=pk)
     context = {}
@@ -346,6 +397,11 @@ def AD_P_2(request, pk):
     predictoras = request.POST.getlist('predictora')
     pronosticar = request.POST['pronostico']
     
+    #verificar que no hayas elegido la misma columna en ambos
+    for i in range (len(predictoras)):
+        if(predictoras[i] == pronosticar):
+            return redirect('/ADPError/{}'.format(pk))
+
     #Paso usual
     source = proyecto.data
     df = pd.read_csv(source)
@@ -509,6 +565,55 @@ def AD_C(request, pk):
 
     return render(request, 'Arboles/AD_C.html', context)
 
+def ADCErrror(request, pk):
+    proyecto = Proyecto.objects.get(pk=pk)
+    source = proyecto.data
+    context = {}
+    context['pk'] = pk
+    #Comienzo del algoritmo
+    df = pd.read_csv(source)
+    df2 = df[:10]
+    context['df'] = df2
+    
+    #Forma del df
+    size = df.shape
+    context['size'] = size
+    
+    #Tipos de datos
+    tipos = []
+    for i in range(df.shape[1]):
+        column = df.columns.values[i]
+        value = df[column].dtype
+        tipos.append(str(column) + ': ' + str(value))
+    context['tipos'] = tipos
+    
+    #Valores nulos
+    nulos = []
+    for i in range(df.shape[1]):
+        column = df.columns.values[i]
+        value = df[column].isnull().sum()
+        nulos.append(str(column) + ': ' + str(value))
+    context['nulos'] = nulos
+
+    #Resumen estadistico de variables numericas
+    df3 = df.describe()
+    context['df3'] = df3
+    
+    #Limpieza de datos categoricos
+    NuevaMatriz = df.drop(columns=df.select_dtypes('object'))
+    ME = NuevaMatriz[:10]
+    context['ME']=ME
+
+    #Correlaciones
+    correlaciones = df.corr()
+    #Mapa de calor de correlaciones
+    calor = px.imshow(correlaciones, text_auto=True, aspect="auto")
+
+    mapaC = plot({'data': calor}, output_type='div')
+    context['corr']=correlaciones
+    context['mapaC'] = mapaC
+    return render(request, 'Arboles/ADCError.html', context)
+
 def AD_C_2(request, pk):
     proyecto = Proyecto.objects.get(pk=pk)
     context = {}
@@ -517,6 +622,11 @@ def AD_C_2(request, pk):
     predictoras = request.POST.getlist('predictora')
     pronosticar = request.POST['pronostico']
     
+    #verificar que no hayas elegido la misma columna en ambos
+    for i in range (len(predictoras)):
+        if(predictoras[i] == pronosticar):
+            return redirect('/ADCError/{}'.format(pk))
+
     #Paso usual
     source = proyecto.data
     df = pd.read_csv(source)
