@@ -20,8 +20,8 @@
             </div>
             <div class="card-footer">
                 {% if flag %}
-                    <a href="/{{Alg}}_P/{{proyectos.pk}}" class="btn btn-primary mb-2">Pronostico</a>
-                    <a href="/{{Alg}}_C/{{proyectos.pk}}" class="btn btn-primary mb-2">Clasificacion</a>
+                    <a href="/{{Alg}}/{{proyectos.pk}}/P" class="btn btn-primary mb-2">Pronostico</a>
+                    <a href="/{{Alg}}/{{proyectos.pk}}/C" class="btn btn-primary mb-2">Clasificacion</a>
                 {% elif flagSVM %}
                     <a href="/{{Alg}}/{{proyectos.pk}}/L" class="btn btn-primary mb-2">Lineal</a>
                     <a href="/{{Alg}}/{{proyectos.pk}}/P" class="btn btn-primary mb-2">Polinomial</a>

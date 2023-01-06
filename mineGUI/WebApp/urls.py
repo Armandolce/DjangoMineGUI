@@ -12,23 +12,15 @@ urlpatterns = [
     path('PCA/<int:pk>', views.PCA_1, name='PCA'),
     path('PCA-2/<int:pk>', views.PCA_2, name='PCA2'),
     
-    path('ADPError/<int:pk>', views.ADPErrror, name='ErrorP'),
-    path('AD_P/<int:pk>', views.AD_P, name='AD_P'),
-    path('AD_P-2/<int:pk>', views.AD_P_2, name='AD_P2'),
-    path('AD_P-3/<int:pk>', views.AD_P_3, name='AD_P3'),
+    path('AD/<int:pk>/<str:algType>',views.AD, name='AD'),
+    path('AD-2/<int:pk>/<str:algType>',views.AD2, name='AD2'),
+    path('AD-3/<int:pk>/<str:algType>',views.AD3, name='AD3'),
+    path('ADError/<int:pk>/<str:algType>', views.ADErrror, name='ADError'),
     
-    path('ADCError/<int:pk>', views.ADCErrror, name='ErrorC'),
-    path('AD_C/<int:pk>', views.AD_C, name='AD_C'),
-    path('AD_C-2/<int:pk>', views.AD_C_2, name='AD_C2'),
-    path('AD_C-3/<int:pk>', views.AD_C_3, name='AD_C3'),
-    
-    path('BA_P/<int:pk>', views.BA_P, name='BA_P'),
-    path('BA_P-2/<int:pk>', views.BA_P_2, name='BA_P2'),
-    path('BA_P-3/<int:pk>', views.BA_P_3, name='BA_P3'),
-    
-    path('BA_C/<int:pk>', views.BA_C, name='BA_C'),
-    path('BA_C-2/<int:pk>', views.BA_C_2, name='BA_C2'),
-    path('BA_C-3/<int:pk>', views.BA_C_3, name='BA_C3'),
+    path('BA/<int:pk>/<str:algType>',views.BA, name='BA'),
+    path('BA-2/<int:pk>/<str:algType>',views.BA2, name='BA2'),
+    path('BA-3/<int:pk>/<str:algType>',views.BA3, name='BA3'),
+    path('BAError/<int:pk>/<str:algType>', views.BAErrror, name='BAError'),
     
     path('SC/<int:pk>',views.SegClas, name='SC'),
     path('SC_2/<int:pk>',views.SegClas_2, name='SC_2'),

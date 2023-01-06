@@ -39,6 +39,10 @@ from sklearn.metrics import RocCurveDisplay
 from .models import Proyecto
 
 
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+#Funcion encargada de los primeros procesos de la mayoria de algoritmos.
 def showDatos(pk):
     proyecto = Proyecto.objects.get(pk=pk)
     source = proyecto.data
@@ -89,14 +93,14 @@ def showDatos(pk):
 
     return(context) 
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-
 # Create your views here.
 def home(request):
     return render(request,'home.html')
 
-#Vistas de Proyectos
+#######################
+# Vistas de Proyectos #
+#######################
+
 def lista_Proyectos(request):
     proyectos = Proyecto.objects.all()
     return render(request, 'Proyectos/Proyectos.html', {
@@ -116,6 +120,10 @@ def delete_project(request, pk):
     proyecto = Proyecto.objects.get(pk=pk)
     proyecto.delete()
     return redirect('project_list')
+
+##############
+# Algoritmos #
+##############
 
 #Vista previa de algoritmos
 def selector(request, Alg):
@@ -156,7 +164,7 @@ def selector(request, Alg):
     context['proyectos'] = proyectos
     return render(request, "Selector.html", context)
 
-#Algoritmos
+#EDA
 def EDA(request, pk):
     proyecto = Proyecto.objects.get(pk=pk)
     source = proyecto.data
@@ -254,7 +262,7 @@ def EDA(request, pk):
     context['mapaC'] = mapaC
     return render(request, 'EDA/EDA.html', context)
 
-
+#PCA
 def PCA_1(request, pk):
     proyecto = Proyecto.objects.get(pk=pk)
     source = proyecto.data
@@ -334,65 +342,28 @@ def PCA_2(request, pk):
     context['size']=size
     return render(request, 'PCA/PCA2.html', context)
 
-
-def AD_P(request, pk):
-    proyecto = Proyecto.objects.get(pk=pk)
-    source = proyecto.data
-    context = {}
-    context['pk'] = pk
-    #Comienzo del algoritmo
-    df = pd.read_csv(source)
-    df2 = df[:10]
-    context['df'] = df2
-    
-    #Forma del df
-    size = df.shape
-    context['size'] = size
-    
-    #Tipos de datos
-    tipos = []
-    for i in range(df.shape[1]):
-        column = df.columns.values[i]
-        value = df[column].dtype
-        tipos.append(str(column) + ': ' + str(value))
-    context['tipos'] = tipos
-    
-    #Valores nulos
-    nulos = []
-    for i in range(df.shape[1]):
-        column = df.columns.values[i]
-        value = df[column].isnull().sum()
-        nulos.append(str(column) + ': ' + str(value))
-    context['nulos'] = nulos
-
-    #Resumen estadistico de variables numericas
-    df3 = df.describe()
-    context['df3'] = df3
-    
-    #Limpieza de datos categoricos
-    NuevaMatriz = df.drop(columns=df.select_dtypes('object'))
-    ME = NuevaMatriz[:10]
-    context['ME']=ME
-
-    #Correlaciones
-    correlaciones = df.corr()
-    #Mapa de calor de correlaciones
-    calor = px.imshow(correlaciones, text_auto=True, aspect="auto")
-
-    mapaC = plot({'data': calor}, output_type='div')
-    context['corr']=correlaciones
-    context['mapaC'] = mapaC
-
-    return render(request, 'Arboles/AD_P.html', context)
-
-def ADPErrror(request, pk):
+#Arboles
+def AD(request, pk, algType):
     context = showDatos(pk)
-    return render(request, 'Arboles/ADPError.html', context)
+    flag = bool
+    context['type'] = algType
 
-def AD_P_2(request, pk):
+    match algType:
+        case 'P':
+            context['AlgName'] = 'Pronostico'
+            flag = True
+        case 'C':
+            context['AlgName'] = 'Clasificacion'
+            flag = False
+    context['flag'] = flag
+    return render(request, 'Arboles/AD.html', context)
+
+def AD2(request, pk, algType):
     proyecto = Proyecto.objects.get(pk=pk)
     context = {}
     context['pk'] = pk
+    context['type'] = algType
+    flag = bool
     #Obtencion de Var Cat y Pred
     predictoras = request.POST.getlist('predictora')
     pronosticar = request.POST['pronostico']
@@ -400,14 +371,13 @@ def AD_P_2(request, pk):
     #verificar que no hayas elegido la misma columna en ambos
     for i in range (len(predictoras)):
         if(predictoras[i] == pronosticar):
-            return redirect('/ADPError/{}'.format(pk))
+            return redirect('/ADError/{}/{}'.format(pk,algType))
 
     #Paso usual
     source = proyecto.data
     df = pd.read_csv(source)
     
-    #Limpiamos de nuevo Xd'nt
-    #NuevaMatriz = df.drop(columns=df.select_dtypes('object'))
+    #Limpiamos de nuevo
     NuevaMat = df.dropna() 
 
 
@@ -422,57 +392,92 @@ def AD_P_2(request, pk):
     Yout = pd.DataFrame(Y)
     
     Yout.to_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/Y.csv'), index=False)
-
-    
     context['Y'] = Yout[:10]
 
     #Division de los datos
-    X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y, 
-                                                                        test_size = 0.2, 
-                                                                        random_state = 0, 
-                                                                        shuffle = True)
+    X_train, X_dos, Y_train, Y_dos = model_selection.train_test_split(X, Y, 
+                                                                                    test_size = 0.2, 
+                                                                                    random_state = 0,
+                                                                                    shuffle = True)
+    match algType:
+        case 'P':
+            context['AlgName'] = 'Pronostico'
+            #Entrenamiento
+            ModeloAD = DecisionTreeRegressor(random_state=0)
+            
+            #Visualizacion de datos de prueba
+            Xtest = pd.DataFrame(X_dos)
+            context['Xtest'] = Xtest[:10]
+            
+            flag = True
+            
+        case 'C':
+            context['AlgName'] = 'Clasificacion'
+            #Entrenamiento
+            ModeloAD = DecisionTreeClassifier(random_state=0)
+            flag = False
 
-    #Visualizacion de datos de prueba
-    Xtest = pd.DataFrame(X_test)
-    context['Xtest'] = Xtest[:10]
-
-    #Entrenamiento
-    PronosticoAD = DecisionTreeRegressor(random_state=0)
-    PronosticoAD.fit(X_train, Y_train)
-
+    context['flag'] = flag
+    
+    ModeloAD.fit(X_train, Y_train)
+    
     #Se genera el pronóstico
-    Y_Pronostico = PronosticoAD.predict(X_test)
+    Y_Pronostico = ModeloAD.predict(X_dos)
     Ypronostico = pd.DataFrame(Y_Pronostico)
     context['YPron'] = Ypronostico[:10]
 
     #Comparacion entre pronostico y prueba
-    Valores = pd.DataFrame(Y_test, Y_Pronostico)
+    Valores = pd.DataFrame(Y_dos, Y_Pronostico)
     Valores2 = Valores.reset_index()
     ValoresOut = Valores2.rename(columns={Valores2.columns[0]: 'Prueba', Valores2.columns[1]: 'Pronostico'})
-    #print(ValoresOut)
     context['Valores'] = ValoresOut[:10]
 
-    #Obtencion del ajuste de Bondad
-    Score = r2_score(Y_test, Y_Pronostico)
-    context['Score'] = Score
+    match algType:
+        case 'P':
 
-    #Criterios
-    criterios = []
-    criterios.append(PronosticoAD.criterion)
-    criterios.append(mean_absolute_error(Y_test, Y_Pronostico))
-    criterios.append(mean_squared_error(Y_test, Y_Pronostico))
-    criterios.append(mean_squared_error(Y_test, Y_Pronostico, squared=False))
-    context['criterios'] = criterios
-    
+            #Obtencion del ajuste de Bondad
+            Score = r2_score(Y_dos, Y_Pronostico)
+            context['Score'] = Score
+
+            #Criterios
+            criterios = []
+            criterios.append(ModeloAD.criterion)
+            criterios.append(mean_absolute_error(Y_dos, Y_Pronostico))
+            criterios.append(mean_squared_error(Y_dos, Y_Pronostico))
+            criterios.append(mean_squared_error(Y_dos, Y_Pronostico, squared=False))
+            context['criterios'] = criterios
+
+        case 'C':
+
+            #Obtencion del ajuste de Bondad
+            Score = accuracy_score(Y_dos, Y_Pronostico)
+            context['Score'] = Score
+
+            #Matriz de clasificacion
+            ModeloClasificacion1 = ModeloAD.predict(X_dos)
+            Matriz_Clasificacion1 = pd.crosstab(Y_dos.ravel(), 
+                                        ModeloClasificacion1, 
+                                        rownames=['Actual'], 
+                                        colnames=['Clasificación']) 
+            context['MClas']=Matriz_Clasificacion1
+
+            #Criterios
+            criterios = []
+            criterios.append(ModeloAD.criterion)
+            criterios.append(accuracy_score(Y_dos, Y_Pronostico))
+            context['criterios'] = criterios
+            ReporteC =classification_report(Y_dos, Y_Pronostico, output_dict=True)
+            RepClas = pd.DataFrame(ReporteC).transpose()
+            context['ReporteClas'] = RepClas         
 
     #Dataframe de la importancia de variables
     Importancia = pd.DataFrame({'Variable': list(NuevaMat[predictoras]),
-                            'Importancia': PronosticoAD.feature_importances_}).sort_values('Importancia', ascending=False)
+                            'Importancia': ModeloAD.feature_importances_}).sort_values('Importancia', ascending=False)
     context['Imp'] = Importancia
-    print(Importancia)
 
     #Reporte o arbol en texto
-    Reporte = export_text(PronosticoAD, feature_names = predictoras)
+
+    Reporte = export_text(ModeloAD, feature_names = predictoras)
     RepOut = []
     RepOut = Reporte.split("\n")
     context['reportes'] = RepOut
@@ -481,143 +486,90 @@ def AD_P_2(request, pk):
     predictorasOut = NuevaMat[predictoras]
     context['Pred'] = predictorasOut[:10]
 
+    return render(request, 'Arboles/AD2.html', context)
 
-    return render(request, 'Arboles/AD_P-2.html', context)
-
-def AD_P_3(request,pk):
-    proyecto = Proyecto.objects.get(pk=pk)
+def AD3(request,pk, algType):
     context = {}
     context['pk'] = pk
-    Val = request.POST.getlist('NPron')
+    context['type'] = algType
+    Val = request.POST.getlist('Nvals')
     X = pd.read_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/X.csv'))
     Y = pd.read_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/Y.csv'))
 
     #Division de los datos
-    X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y, 
+    X_train, X_dos, Y_train, Y_dos = model_selection.train_test_split(X, Y, 
                                                                         test_size = 0.2, 
                                                                         random_state = 0, 
                                                                         shuffle = True)
     
-    #Entrenamiento
-    PronosticoAD = DecisionTreeRegressor(random_state=0)
-    PronosticoAD.fit(X_train, Y_train)
+    match algType:
+        case 'P':
+            context['AlgName'] = 'Pronostico'
+            #Entrenamiento
+            ModeloAD = DecisionTreeRegressor(random_state=0)            
+            flag = True
+            
+        case 'C':
+            context['AlgName'] = 'Clasificacion'
+            #Entrenamiento
+            ModeloAD = DecisionTreeClassifier(random_state=0)
+            flag = False
+
+    context['flag'] = flag
+    
+    ModeloAD.fit(X_train, Y_train)
 
     col = list(X.columns)
     datoOut = {}
+    print(X.shape[1])
     for i in range(X.shape[1]):
         datoOut[col[i]] = int(Val[i])
     Npron = pd.DataFrame(datoOut, index=[0])
     context['DfN'] = Npron
-    resultado = PronosticoAD.predict(Npron)
+    resultado = ModeloAD.predict(Npron)
     print(resultado)
     context['resultado'] = resultado
 
-    return render(request, 'Arboles/AD_P-3.html', context)
+    return render(request, 'Arboles/AD3.html', context)
 
+def ADErrror(request, pk, algType):
+    context = showDatos(pk)
+    flag = bool
+    context['type'] = algType
 
-def AD_C(request, pk):
-    proyecto = Proyecto.objects.get(pk=pk)
-    source = proyecto.data
-    context = {}
-    context['pk'] = pk
-    #Comienzo del algoritmo
-    df = pd.read_csv(source)
-    df2 = df[:10]
-    context['df'] = df2
-    
-    #Forma del df
-    size = df.shape
-    context['size'] = size
-    
-    #Tipos de datos
-    tipos = []
-    for i in range(df.shape[1]):
-        column = df.columns.values[i]
-        value = df[column].dtype
-        tipos.append(str(column) + ': ' + str(value))
-    context['tipos'] = tipos
-    
-    #Valores nulos
-    nulos = []
-    for i in range(df.shape[1]):
-        column = df.columns.values[i]
-        value = df[column].isnull().sum()
-        nulos.append(str(column) + ': ' + str(value))
-    context['nulos'] = nulos
+    match algType:
+        case 'P':
+            context['AlgName'] = 'Pronostico'
+            flag = True
+        case 'C':
+            context['AlgName'] = 'Clasificacion'
+            flag = False
+    context['flag'] = flag
 
-    #Resumen estadistico de variables numericas
-    df3 = df.describe()
-    context['df3'] = df3
-    
-    #Limpieza de datos categoricos
-    NuevaMatriz = df.drop(columns=df.select_dtypes('object'))
-    ME = NuevaMatriz[:10]
-    context['ME']=ME
+    return render(request, 'Arboles/ADError.html', context)
 
-    #Correlaciones
-    correlaciones = df.corr()
-    #Mapa de calor de correlaciones
-    calor = px.imshow(correlaciones, text_auto=True, aspect="auto")
+#Bosques
+def BA(request, pk, algType):
+    context = showDatos(pk)
+    flag = bool
+    context['type'] = algType
 
-    mapaC = plot({'data': calor}, output_type='div')
-    context['corr']=correlaciones
-    context['mapaC'] = mapaC
+    match algType:
+        case 'P':
+            context['AlgName'] = 'Pronostico'
+            flag = True
+        case 'C':
+            context['AlgName'] = 'Clasificacion'
+            flag = False
+    context['flag'] = flag
+    return render(request, 'Bosques/BA.html', context)
 
-    return render(request, 'Arboles/AD_C.html', context)
-
-def ADCErrror(request, pk):
-    proyecto = Proyecto.objects.get(pk=pk)
-    source = proyecto.data
-    context = {}
-    context['pk'] = pk
-    #Comienzo del algoritmo
-    df = pd.read_csv(source)
-    df2 = df[:10]
-    context['df'] = df2
-    
-    #Forma del df
-    size = df.shape
-    context['size'] = size
-    
-    #Tipos de datos
-    tipos = []
-    for i in range(df.shape[1]):
-        column = df.columns.values[i]
-        value = df[column].dtype
-        tipos.append(str(column) + ': ' + str(value))
-    context['tipos'] = tipos
-    
-    #Valores nulos
-    nulos = []
-    for i in range(df.shape[1]):
-        column = df.columns.values[i]
-        value = df[column].isnull().sum()
-        nulos.append(str(column) + ': ' + str(value))
-    context['nulos'] = nulos
-
-    #Resumen estadistico de variables numericas
-    df3 = df.describe()
-    context['df3'] = df3
-    
-    #Limpieza de datos categoricos
-    NuevaMatriz = df.drop(columns=df.select_dtypes('object'))
-    ME = NuevaMatriz[:10]
-    context['ME']=ME
-
-    #Correlaciones
-    correlaciones = df.corr()
-    #Mapa de calor de correlaciones
-    calor = px.imshow(correlaciones, text_auto=True, aspect="auto")
-
-    mapaC = plot({'data': calor}, output_type='div')
-    context['corr']=correlaciones
-    context['mapaC'] = mapaC
-    return render(request, 'Arboles/ADCError.html', context)
-
-def AD_C_2(request, pk):
+def BA2(request, pk, algType):
     proyecto = Proyecto.objects.get(pk=pk)
     context = {}
     context['pk'] = pk
+    context['type'] = algType
+    flag = bool
     #Obtencion de Var Cat y Pred
     predictoras = request.POST.getlist('predictora')
     pronosticar = request.POST['pronostico']
@@ -625,14 +577,13 @@ def AD_C_2(request, pk):
     #verificar que no hayas elegido la misma columna en ambos
     for i in range (len(predictoras)):
         if(predictoras[i] == pronosticar):
-            return redirect('/ADCError/{}'.format(pk))
+            return redirect('/BAError/{}/{}'.format(pk,algType))
 
     #Paso usual
     source = proyecto.data
     df = pd.read_csv(source)
     
-    #Limpiamos de nuevo Xd'nt
-    #NuevaMatriz = df.drop(columns=df.select_dtypes('object'))
+    #Limpiamos de nuevo
     NuevaMat = df.dropna() 
 
 
@@ -647,415 +598,85 @@ def AD_C_2(request, pk):
     Yout = pd.DataFrame(Y)
     
     Yout.to_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/Y.csv'), index=False)
-
-    
     context['Y'] = Yout[:10]
 
     #Division de los datos
-    X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(X, Y, 
-                                                                                test_size = 0.2, 
-                                                                                random_state = 0,
-                                                                                shuffle = True)
+    X_train, X_dos, Y_train, Y_dos = model_selection.train_test_split(X, Y, 
+                                                                                    test_size = 0.2, 
+                                                                                    random_state = 0,
+                                                                                    shuffle = True)
+    match algType:
+        case 'P':
+            context['AlgName'] = 'Pronostico'
+            #Entrenamiento
+            ModeloBA = RandomForestRegressor(random_state=0)
+            
+            #Visualizacion de datos de prueba
+            Xtest = pd.DataFrame(X_dos)
+            context['Xtest'] = Xtest[:10]
+            
+            flag = True
+            
+        case 'C':
+            context['AlgName'] = 'Clasificacion'
+            #Entrenamiento
+            ModeloBA = RandomForestClassifier(random_state=0)
+            flag = False
 
-
-    #Entrenamiento
-    ClasificacionAD = DecisionTreeClassifier(random_state=0)
-    ClasificacionAD.fit(X_train, Y_train)
-
+    context['flag'] = flag
+    
+    ModeloBA.fit(X_train, Y_train)
+    
     #Se genera el pronóstico
-    Y_ClasificacionAD = ClasificacionAD.predict(X_validation)
-    print(Y_ClasificacionAD)
-
-    #Comparacion entre pronostico y prueba
-    Valores = pd.DataFrame(Y_validation, Y_ClasificacionAD)
-    Valores2 = Valores.reset_index()
-    ValoresOut = Valores2.rename(columns={Valores2.columns[0]: 'Prueba', Valores2.columns[1]: 'Pronostico'})
-    #print(ValoresOut)
-    context['Valores'] = ValoresOut[:10]
-
-    #Obtencion del ajuste de Bondad
-    Score = accuracy_score(Y_validation, Y_ClasificacionAD)
-    context['Score'] = Score
-
-    #Matriz de clasificacion
-    ModeloClasificacion1 = ClasificacionAD.predict(X_validation)
-    Matriz_Clasificacion1 = pd.crosstab(Y_validation.ravel(), 
-                                   ModeloClasificacion1, 
-                                   rownames=['Actual'], 
-                                   colnames=['Clasificación']) 
-    print(Matriz_Clasificacion1)
-    context['MClas']=Matriz_Clasificacion1
-
-    #Criterios
-    criterios = []
-    criterios.append(ClasificacionAD.criterion)
-    criterios.append(accuracy_score(Y_validation, Y_ClasificacionAD))
-    context['criterios'] = criterios
-    ReporteC =classification_report(Y_validation, Y_ClasificacionAD, output_dict=True)
-    RepClas = pd.DataFrame(ReporteC).transpose()
-    context['ReporteClas'] = RepClas
-
-    #Dataframe de la importancia de variables
-    Importancia = pd.DataFrame({'Variable': list(NuevaMat[predictoras]),
-                            'Importancia': ClasificacionAD.feature_importances_}).sort_values('Importancia', ascending=False)
-    context['Imp'] = Importancia
-    print(Importancia)
-
-    #Reporte o arbol en texto
-    Reporte = export_text(ClasificacionAD, feature_names = predictoras)
-    RepOut = []
-    RepOut = Reporte.split("\n")
-    context['reportes'] = RepOut
-
-    #Eleccion para nuevo pronostico
-    predictorasOut = NuevaMat[predictoras]
-    context['Pred'] = predictorasOut[:10]
-
-
-    return render(request, 'Arboles/AD_C-2.html', context)
-
-def AD_C_3(request,pk):
-    proyecto = Proyecto.objects.get(pk=pk)
-    context = {}
-    context['pk'] = pk
-    Val = request.POST.getlist('NClas')
-    X = pd.read_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/X.csv'))
-    Y = pd.read_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/Y.csv'))
-
-    #Division de los datos
-    X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(X, Y, 
-                                                                                test_size = 0.2, 
-                                                                                random_state = 0,
-                                                                                shuffle = True)
-
-
-    #Entrenamiento
-    ClasificacionAD = DecisionTreeClassifier(random_state=0)
-    ClasificacionAD.fit(X_train, Y_train)
-
-    col = list(X.columns)
-    datoOut = {}
-    for i in range(X.shape[1]):
-        datoOut[col[i]] = int(Val[i])
-    Npron = pd.DataFrame(datoOut, index=[0])
-    context['DfN'] = Npron
-    resultado = ClasificacionAD.predict(Npron)
-    print(resultado)
-    context['resultado'] = resultado
-
-    return render(request, 'Arboles/AD_C-3.html', context)
-
-
-def BA_P(request, pk):
-    proyecto = Proyecto.objects.get(pk=pk)
-    source = proyecto.data
-    context = {}
-    context['pk'] = pk
-    #Comienzo del algoritmo
-    df = pd.read_csv(source)
-    df2 = df[:10]
-    context['df'] = df2
-    
-    #Forma del df
-    size = df.shape
-    context['size'] = size
-    
-    #Tipos de datos
-    tipos = []
-    for i in range(df.shape[1]):
-        column = df.columns.values[i]
-        value = df[column].dtype
-        tipos.append(str(column) + ': ' + str(value))
-    context['tipos'] = tipos
-    
-    #Valores nulos
-    nulos = []
-    for i in range(df.shape[1]):
-        column = df.columns.values[i]
-        value = df[column].isnull().sum()
-        nulos.append(str(column) + ': ' + str(value))
-    context['nulos'] = nulos
-
-    #Resumen estadistico de variables numericas
-    df3 = df.describe()
-    context['df3'] = df3
-    
-    #Limpieza de datos categoricos
-    NuevaMatriz = df.drop(columns=df.select_dtypes('object'))
-    ME = NuevaMatriz[:10]
-    context['ME']=ME
-
-    #Correlaciones
-    correlaciones = df.corr()
-    #Mapa de calor de correlaciones
-    calor = px.imshow(correlaciones, text_auto=True, aspect="auto")
-
-    mapaC = plot({'data': calor}, output_type='div')
-    context['corr']=correlaciones
-    context['mapaC'] = mapaC
-
-    return render(request, 'Bosques/BA_P.html', context)
-
-def BA_P_2(request, pk):
-    proyecto = Proyecto.objects.get(pk=pk)
-    context = {}
-    context['pk'] = pk
-    #Obtencion de Var Cat y Pred
-    predictoras = request.POST.getlist('predictora')
-    pronosticar = request.POST['pronostico']
-    
-    #Paso usual
-    source = proyecto.data
-    df = pd.read_csv(source)
-    
-    #Limpiamos de nuevo Xd'nt
-    #NuevaMatriz = df.drop(columns=df.select_dtypes('object'))
-    NuevaMat = df.dropna() 
-
-
-    #Seleccion variables Predictoras y de pronostico
-    aux = pd.DataFrame(NuevaMat[predictoras])
-    X = np.array(NuevaMat[predictoras])
-    Xout = pd.DataFrame(data=X, columns=aux.columns.values)
-    Xout.to_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/X.csv'), index=False)
-    context['X'] = Xout[:10]
-
-    Y = np.array(NuevaMat[pronosticar])
-    Yout = pd.DataFrame(Y)
-    
-    Yout.to_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/Y.csv'), index=False)
-
-    
-    context['Y'] = Yout[:10]
-
-    #Division de los datos
-    X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y, 
-                                                                        test_size = 0.2, 
-                                                                        random_state = 0, 
-                                                                        shuffle = True)
-
-    #Visualizacion de datos de prueba
-    Xtest = pd.DataFrame(X_test)
-    context['Xtest'] = Xtest[:10]
-
-    #Entrenamiento
-    PronosticoBA = RandomForestRegressor(random_state=0)
-    PronosticoBA.fit(X_train, Y_train)
-
-    #Se genera el pronóstico
-    Y_Pronostico = PronosticoBA.predict(X_test)
+    Y_Pronostico = ModeloBA.predict(X_dos)
     Ypronostico = pd.DataFrame(Y_Pronostico)
     context['YPron'] = Ypronostico[:10]
 
     #Comparacion entre pronostico y prueba
-    Valores = pd.DataFrame(Y_test, Y_Pronostico)
+    Valores = pd.DataFrame(Y_dos, Y_Pronostico)
     Valores2 = Valores.reset_index()
     ValoresOut = Valores2.rename(columns={Valores2.columns[0]: 'Prueba', Valores2.columns[1]: 'Pronostico'})
-    #print(ValoresOut)
     context['Valores'] = ValoresOut[:10]
 
     #Obtencion del ajuste de Bondad
-    Score = r2_score(Y_test, Y_Pronostico)
+    Score = r2_score(Y_dos, Y_Pronostico)
     context['Score'] = Score
 
-    #Criterios
-    criterios = []
-    criterios.append(PronosticoBA.criterion)
-    criterios.append(mean_absolute_error(Y_test, Y_Pronostico))
-    criterios.append(mean_squared_error(Y_test, Y_Pronostico))
-    criterios.append(mean_squared_error(Y_test, Y_Pronostico, squared=False))
-    context['criterios'] = criterios
-    
+    match algType:
+        case 'P':
+            #Criterios
+            criterios = []
+            criterios.append(ModeloBA.criterion)
+            criterios.append(mean_absolute_error(Y_dos, Y_Pronostico))
+            criterios.append(mean_squared_error(Y_dos, Y_Pronostico))
+            criterios.append(mean_squared_error(Y_dos, Y_Pronostico, squared=False))
+            context['criterios'] = criterios
+
+        case 'C':
+            #Matriz de clasificacion
+            ModeloClasificacion1 = ModeloBA.predict(X_dos)
+            Matriz_Clasificacion1 = pd.crosstab(Y_dos.ravel(), 
+                                        ModeloClasificacion1, 
+                                        rownames=['Actual'], 
+                                        colnames=['Clasificación']) 
+            context['MClas']=Matriz_Clasificacion1
+
+            #Criterios
+            criterios = []
+            criterios.append(ModeloBA.criterion)
+            criterios.append(accuracy_score(Y_dos, Y_Pronostico))
+            context['criterios'] = criterios
+            ReporteC =classification_report(Y_dos, Y_Pronostico, output_dict=True)
+            RepClas = pd.DataFrame(ReporteC).transpose()
+            context['ReporteClas'] = RepClas         
 
     #Dataframe de la importancia de variables
     Importancia = pd.DataFrame({'Variable': list(NuevaMat[predictoras]),
-                            'Importancia': PronosticoBA.feature_importances_}).sort_values('Importancia', ascending=False)
+                            'Importancia': ModeloBA.feature_importances_}).sort_values('Importancia', ascending=False)
     context['Imp'] = Importancia
-    print(Importancia)
 
     #Reporte o arbol en texto
-    Estimador = PronosticoBA.estimators_[50]
-    
-    Reporte = export_text(Estimador, feature_names = predictoras)
-    RepOut = []
-    RepOut = Reporte.split("\n")
-    context['reportes'] = RepOut
-
-    #Eleccion para nuevo pronostico
-    predictorasOut = NuevaMat[predictoras]
-    context['Pred'] = predictorasOut[:10]
-
-
-    return render(request, 'Bosques/BA_P-2.html', context)
-
-def BA_P_3(request,pk):
-    proyecto = Proyecto.objects.get(pk=pk)
-    context = {}
-    context['pk'] = pk
-    Val = request.POST.getlist('NPron')
-    X = pd.read_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/X.csv'))
-    Y = pd.read_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/Y.csv'))
-
-    #Division de los datos
-    X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y, 
-                                                                        test_size = 0.2, 
-                                                                        random_state = 0, 
-                                                                        shuffle = True)
-    
-    #Entrenamiento
-    PronosticoAD = RandomForestRegressor(random_state=0)
-    PronosticoAD.fit(X_train, Y_train)
-
-    col = list(X.columns)
-    datoOut = {}
-    for i in range(X.shape[1]):
-        datoOut[col[i]] = int(Val[i])
-    Npron = pd.DataFrame(datoOut, index=[0])
-    context['DfN'] = Npron
-    resultado = PronosticoAD.predict(Npron)
-    print(resultado)
-    context['resultado'] = resultado
-
-    return render(request, 'Bosques/BA_P-3.html', context)
-
-
-def BA_C(request, pk):
-    proyecto = Proyecto.objects.get(pk=pk)
-    source = proyecto.data
-    context = {}
-    context['pk'] = pk
-    #Comienzo del algoritmo
-    df = pd.read_csv(source)
-    df2 = df[:10]
-    context['df'] = df2
-    
-    #Forma del df
-    size = df.shape
-    context['size'] = size
-    
-    #Tipos de datos
-    tipos = []
-    for i in range(df.shape[1]):
-        column = df.columns.values[i]
-        value = df[column].dtype
-        tipos.append(str(column) + ': ' + str(value))
-    context['tipos'] = tipos
-    
-    #Valores nulos
-    nulos = []
-    for i in range(df.shape[1]):
-        column = df.columns.values[i]
-        value = df[column].isnull().sum()
-        nulos.append(str(column) + ': ' + str(value))
-    context['nulos'] = nulos
-
-    #Resumen estadistico de variables numericas
-    df3 = df.describe()
-    context['df3'] = df3
-    
-    #Limpieza de datos categoricos
-    NuevaMatriz = df.drop(columns=df.select_dtypes('object'))
-    ME = NuevaMatriz[:10]
-    context['ME']=ME
-
-    #Correlaciones
-    correlaciones = df.corr()
-    #Mapa de calor de correlaciones
-    calor = px.imshow(correlaciones, text_auto=True, aspect="auto")
-
-    mapaC = plot({'data': calor}, output_type='div')
-    context['corr']=correlaciones
-    context['mapaC'] = mapaC
-
-
-    return render(request, 'Bosques/BA_C.html', context)
-
-def BA_C_2(request, pk):
-    proyecto = Proyecto.objects.get(pk=pk)
-    context = {}
-    context['pk'] = pk
-    #Obtencion de Var Cat y Pred
-    predictoras = request.POST.getlist('predictora')
-    pronosticar = request.POST['pronostico']
-    
-    #Paso usual
-    source = proyecto.data
-    df = pd.read_csv(source)
-    
-    #Limpiamos de nuevo Xd'nt
-    #NuevaMatriz = df.drop(columns=df.select_dtypes('object'))
-    NuevaMat = df.dropna() 
-
-
-    #Seleccion variables Predictoras y de pronostico
-    aux = pd.DataFrame(NuevaMat[predictoras])
-    X = np.array(NuevaMat[predictoras])
-    Xout = pd.DataFrame(data=X, columns=aux.columns.values)
-    Xout.to_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/X.csv'), index=False)
-    context['X'] = Xout[:10]
-
-    Y = np.array(NuevaMat[pronosticar])
-    Yout = pd.DataFrame(Y)
-    
-    Yout.to_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/Y.csv'), index=False)
-
-    
-    context['Y'] = Yout[:10]
-
-    #Division de los datos
-    X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(X, Y, 
-                                                                                test_size = 0.2, 
-                                                                                random_state = 0,
-                                                                                shuffle = True)
-
-
-    #Entrenamiento
-    ClasificacionBA = RandomForestClassifier(random_state=0)
-    ClasificacionBA.fit(X_train, Y_train)
-
-    #Se genera el pronóstico
-    Y_ClasificacionAD = ClasificacionBA.predict(X_validation)
-    print(Y_ClasificacionAD)
-
-    #Comparacion entre pronostico y prueba
-    Valores = pd.DataFrame(Y_validation, Y_ClasificacionAD)
-    Valores2 = Valores.reset_index()
-    ValoresOut = Valores2.rename(columns={Valores2.columns[0]: 'Prueba', Valores2.columns[1]: 'Pronostico'})
-    #print(ValoresOut)
-    context['Valores'] = ValoresOut[:10]
-
-    #Obtencion del ajuste de Bondad
-    Score = accuracy_score(Y_validation, Y_ClasificacionAD)
-    context['Score'] = Score
-
-    #Matriz de clasificacion
-    ModeloClasificacion1 = ClasificacionBA.predict(X_validation)
-    Matriz_Clasificacion1 = pd.crosstab(Y_validation.ravel(), 
-                                   ModeloClasificacion1, 
-                                   rownames=['Actual'], 
-                                   colnames=['Clasificación']) 
-    print(Matriz_Clasificacion1)
-    context['MClas']=Matriz_Clasificacion1
-
-    #Criterios
-    criterios = []
-    criterios.append(ClasificacionBA.criterion)
-    criterios.append(accuracy_score(Y_validation, Y_ClasificacionAD))
-    context['criterios'] = criterios
-    ReporteC =classification_report(Y_validation, Y_ClasificacionAD, output_dict=True)
-    RepClas = pd.DataFrame(ReporteC).transpose()
-    context['ReporteClas'] = RepClas
-
-    #Dataframe de la importancia de variables
-    Importancia = pd.DataFrame({'Variable': list(NuevaMat[predictoras]),
-                            'Importancia': ClasificacionBA.feature_importances_}).sort_values('Importancia', ascending=False)
-    context['Imp'] = Importancia
-    print(Importancia)
-
-    #Reporte o arbol en texto
-
-    #Reporte o arbol en texto
-    Estimador = ClasificacionBA.estimators_[50]
+    Estimador = ModeloBA.estimators_[50]
 
     Reporte = export_text(Estimador, feature_names = predictoras)
     RepOut = []
@@ -1066,91 +687,70 @@ def BA_C_2(request, pk):
     predictorasOut = NuevaMat[predictoras]
     context['Pred'] = predictorasOut[:10]
 
+    return render(request, 'Bosques/BA2.html', context)
 
-    return render(request, 'Bosques/BA_C-2.html', context)
-
-def BA_C_3(request,pk):
-    proyecto = Proyecto.objects.get(pk=pk)
+def BA3(request,pk, algType):
     context = {}
     context['pk'] = pk
-    Val = request.POST.getlist('NClas')
+    context['type'] = algType
+    Val = request.POST.getlist('Nvals')
     X = pd.read_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/X.csv'))
     Y = pd.read_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/Y.csv'))
 
     #Division de los datos
-    X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y, 
+    X_train, X_dos, Y_train, Y_dos = model_selection.train_test_split(X, Y, 
                                                                         test_size = 0.2, 
                                                                         random_state = 0, 
                                                                         shuffle = True)
     
-    #Entrenamiento
-    ClasificacionBA = RandomForestClassifier(random_state=0)
-    ClasificacionBA.fit(X_train, Y_train)
+    match algType:
+        case 'P':
+            context['AlgName'] = 'Pronostico'
+            #Entrenamiento
+            ModeloBA = RandomForestRegressor(random_state=0)
+            flag = True
+            
+        case 'C':
+            context['AlgName'] = 'Clasificacion'
+            #Entrenamiento
+            ModeloBA = RandomForestClassifier(random_state=0)
+            flag = False
+
+    ModeloBA.fit(X_train, Y_train)
+    context['flag'] = flag
 
     col = list(X.columns)
     datoOut = {}
+    print(X.shape[1])
     for i in range(X.shape[1]):
         datoOut[col[i]] = int(Val[i])
     Npron = pd.DataFrame(datoOut, index=[0])
     context['DfN'] = Npron
-    resultado = ClasificacionBA.predict(Npron)
+    resultado = ModeloBA.predict(Npron)
     print(resultado)
     context['resultado'] = resultado
 
-    return render(request, 'Bosques/BA_C-3.html', context)
+    return render(request, 'Bosques/BA3.html', context)
 
+def BAErrror(request, pk, algType):
+    context = showDatos(pk)
+    flag = bool
+    context['type'] = algType
 
+    match algType:
+        case 'P':
+            context['AlgName'] = 'Pronostico'
+            flag = True
+        case 'C':
+            context['AlgName'] = 'Clasificacion'
+            flag = False
+    context['flag'] = flag
+
+    return render(request, 'Bosques/BAError.html', context)
+
+#Segmentacion y clasificacion
 def SegClas(request, pk):
-    proyecto = Proyecto.objects.get(pk=pk)
-    source = proyecto.data
-    context = {}
-    context['pk'] = pk
-    #Comienzo del algoritmo
-    df = pd.read_csv(source)
-    for i in range(df.shape[1]):
-        df.columns.values[i] = df.columns.values[i].replace(" ","_")
-    
-    df2 = df[:10]
-    context['df'] = df2
-    
-    #Forma del df
-    size = df.shape
-    context['size'] = size
-    
-    #Tipos de datos
-    tipos = []
-    for i in range(df.shape[1]):
-        column = df.columns.values[i]
-        value = df[column].dtype
-        tipos.append(str(column) + ': ' + str(value))
-    context['tipos'] = tipos
-    
-    #Valores nulos
-    nulos = []
-    for i in range(df.shape[1]):
-        column = df.columns.values[i]
-        value = df[column].isnull().sum()
-        nulos.append(str(column) + ': ' + str(value))
-    context['nulos'] = nulos
-
-    #Resumen estadistico de variables numericas
-    df3 = df.describe()
-    context['df3'] = df3
-    
-    #Limpieza de datos categoricos
-    NuevaMatriz = df.drop(columns=df.select_dtypes('object'))
-    ME = NuevaMatriz[:10]
-    context['ME']=ME
-
-    #Correlaciones
-    correlaciones = df.corr()
-    #Mapa de calor de correlaciones
-    calor = px.imshow(correlaciones, text_auto=True, aspect="auto")
-
-    mapaC = plot({'data': calor}, output_type='div')
-    context['corr']=correlaciones
-    context['mapaC'] = mapaC
-
+    context = showDatos(pk)
     return render(request, 'SegClas/Clusters.html', context)
 
 def SegClas_2(request, pk):
@@ -1382,11 +982,9 @@ def SegClas_3(request,pk):
 
     return render(request, 'SegClas/Clusters3.html', context)
 
+#Maquinas de soporte vectorial
 def SVM(request, pk, algType):
-    proyecto = Proyecto.objects.get(pk=pk)
-    source = proyecto.data
-    context = {}
-    context['pk'] = pk
+    context = showDatos(pk)
     context['type'] = algType
 
     match algType:
@@ -1398,52 +996,6 @@ def SVM(request, pk, algType):
             context['AlgName'] = 'RBF -Función de Base Radial-'
         case 'SGM':
             context['AlgName'] = 'Sigmoide'
-
-    #Comienzo del algoritmo
-    df = pd.read_csv(source)
-    for i in range(df.shape[1]):
-        df.columns.values[i] = df.columns.values[i].replace(" ","_")
-    
-    df2 = df[:10]
-    context['df'] = df2
-    
-    #Forma del df
-    size = df.shape
-    context['size'] = size
-    
-    #Tipos de datos
-    tipos = []
-    for i in range(df.shape[1]):
-        column = df.columns.values[i]
-        value = df[column].dtype
-        tipos.append(str(column) + ': ' + str(value))
-    context['tipos'] = tipos
-    
-    #Valores nulos
-    nulos = []
-    for i in range(df.shape[1]):
-        column = df.columns.values[i]
-        value = df[column].isnull().sum()
-        nulos.append(str(column) + ': ' + str(value))
-    context['nulos'] = nulos
-
-    #Resumen estadistico de variables numericas
-    df3 = df.describe()
-    context['df3'] = df3
-    
-    #Limpieza de datos categoricos
-    NuevaMatriz = df.drop(columns=df.select_dtypes('object'))
-    ME = NuevaMatriz[:10]
-    context['ME']=ME
-
-    #Correlaciones
-    correlaciones = df.corr()
-    #Mapa de calor de correlaciones
-    calor = px.imshow(correlaciones, text_auto=True, aspect="auto")
-
-    mapaC = plot({'data': calor}, output_type='div')
-    context['corr']=correlaciones
-    context['mapaC'] = mapaC
 
     return render(request, 'SVM/SVM.html', context)
 
@@ -1602,7 +1154,10 @@ def SVM_3(request,pk, algType):
 
     return render(request, 'SVM/SVM3.html', context)
 
-#Vistas con ideas antiguas o pruebas
+
+#######################################
+# Vistas con ideas antiguas o pruebas #
+#######################################
 def busqueda(request):
     proyectoP = Proyecto.objects.get(pk=18)
     source = proyectoP.data

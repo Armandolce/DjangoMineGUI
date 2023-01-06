@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %} mineGUI | Bosques Aleatorios: Pronostico-2 {% endblock %}
+{% block title %} mineGUI | Bosques Aleatorios: {{AlgName}}-2 {% endblock %}
 
 {% block body %}
 <div class="row">
   <div class="col-xs-12">
-    <h1>Arboles y Bosques: Pronostico</h1>
+    <h1>Arboles y Bosques: {{AlgName}}</h1>
   </div>
 </div>
 
@@ -71,40 +71,39 @@
      </table>
   </div>
 </div>
-
-<div class="row my-4">
-
-  <div class="col-sm-12" style="overflow-x: auto;">
-    <h5>Division de los datos:</h5>
-    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
-      <tr>
-        <th>
-
-        </th>
-        {% for col in Xtest.columns %}
+{% if flag %}
+  <div class="row my-4">
+    <div class="col-sm-12" style="overflow-x: auto;">
+      <h5>Division de los datos:</h5>
+      <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+        <tr>
           <th>
-           {{col}}
+
           </th>
-         {% endfor %}
-       </tr>
-        {% for index, row in Xtest.iterrows %}
-          <tr>
+          {% for col in Xtest.columns %}
             <th>
-              {{index}}
+            {{col}}
             </th>
-            {% for cell in row %}
-              <td>
-                {{cell}}
-              </td>
-            {% endfor %}
-          </tr>
-        {% endfor %}
-     </table>
+          {% endfor %}
+        </tr>
+          {% for index, row in Xtest.iterrows %}
+            <tr>
+              <th>
+                {{index}}
+              </th>
+              {% for cell in row %}
+                <td>
+                  {{cell}}
+                </td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+      </table>
+    </div>
   </div>
-</div>
+{% endif %}
 
 <div class="row my-4">
-
   <div class="col-sm-12" style="overflow-x: auto;">
     <h5>Pronostico generado:</h5>
     <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
@@ -164,13 +163,75 @@
      <h3>Ajuste de bondad del modelo: {{ Score|floatformat:4 }}</h3>
   </div>
 </div>
+{% if flag %}
+  <div class="row my-4">
+    <p> MAE : {{criterios.0}}</p>
+    <p> MSE : {{criterios.1}}</p>
+    <p> RMSE : {{criterios.2}}</p>
+  </div>
+{% else %}
+  <div class="row my-4">
+    <div class="col-sm-12" style="overflow-x: auto;">
+      <h5>Matriz de clasificacion:</h5>
+      <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+        <tr>
+          <th>
 
-<div class="row my-4">
-  <p> MAE : {{criterios.0}}</p>
-  <p> MSE : {{criterios.1}}</p>
-  <p> RMSE : {{criterios.2}}</p>
-  
-</div>
+          </th>
+          {% for col in MClas.columns %}
+            <th>
+            {{col}}
+            </th>
+          {% endfor %}
+        </tr>
+          {% for index, row in MClas.iterrows %}
+            <tr>
+              <th>
+                {{index}}
+              </th>
+              {% for cell in row %}
+                <td>
+                  {{cell}}
+                </td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+      </table>
+    </div>
+  </div>
+
+  <div class="row my-4">
+    <p> <b>Criterio:</b> <br>{{criterios.0}}</p>
+    <p> <b>Exactitud: </b> {{criterios.1}}</p>
+    <div class="col-sm-12" style="overflow-x: auto;">
+      <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+        <tr>
+          <th>
+
+          </th>
+          {% for col in ReporteClas.columns %}
+            <th>
+            {{col}}
+            </th>
+          {% endfor %}
+        </tr>
+          {% for index, row in ReporteClas.iterrows %}
+            <tr>
+              <th>
+                {{index}}
+              </th>
+              {% for cell in row %}
+                <td>
+                  {{cell|floatformat:2 }}
+                </td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+      </table>
+    </div> 
+    
+  </div>
+{% endif %}
 
 <div class="row my-4">
   <div class="col-sm-12" style="overflow-x: auto;">
@@ -213,11 +274,11 @@
   <div class="col-sm-12">
     <div class="card py-2">
       <div class=" card-body">
-        <form  class="needs-validation" novalidate action="/BA_P-3/{{pk}}" method="POST"> {% csrf_token %}
+        <form  class="needs-validation" novalidate action="/BA-3/{{pk}}/{{type}}" method="POST"> {% csrf_token %}
           <h5>Selecciona los valores para el nuevo pronostico: </h5>
           {% for col in Pred.columns %}
           <div class="form-check">
-            <input type="number" min="0" oninput="validity.valid||(value='');" name="NPron" id="option:{{col}}"/>
+            <input type="number" min="0" oninput="validity.valid||(value='');" name="Nvals" id="option:{{col}}"/>
             <label for="option:{{col}}"><b>{{col}}</b></label><br/>
           </div>
           {% endfor %}
@@ -227,10 +288,6 @@
     </div>   
   </div>
 </div>
-
-
-<!-- {% include "Arboles/test.html" %} -->
-
 
 {% endblock %}
 
