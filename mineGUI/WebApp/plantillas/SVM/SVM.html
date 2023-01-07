@@ -127,19 +127,30 @@
 <div class="col-sm-12">
   <div class="card py-2">
     <div class=" card-body">
-      <form  class="needs-validation" novalidate action="/SVM_2/{{pk}}/{{type}}" method="POST"> {% csrf_token %}
+      <form  class="needs-validation" action="/SVM_2/{{pk}}/{{type}}" method="POST" novalidate> {% csrf_token %}
         <h5>Selecciona las variables predictoras: </h5>
         {% for col in ME.columns %}
         <div class="form-check">
-          <input type="checkbox" name="predictora" id="option:{{col}}" value={{col}} />
-          <label for="option:{{col}}"><b>{{col}}</b></label><br />
+          <input type="checkbox" name="predictora" id="option:{{col}}" value={{col}}>
+          <label for="option:{{col}}"><b>{{col}}</b></label><br >
+          {% if forloop.last %}
+          <div class="invalid-feedback">
+            <strong>Por favor escoge al menos una variable</strong>
+          </div>
+          {% endif %}
         </div>
         {% endfor %}
+        
         <h5>De igual manera, selecciona la variable clase: </h5>
         {% for col in ME.columns %}
         <div class="form-check">
-          <input type="radio" name="pronostico" id="option:{{col}}2" value={{col}} />
-          <label for="option:{{col}}2"><b>{{col}}</b></label><br />
+          <input type="radio" name="pronostico" id="option:{{col}}2" value={{col}} required>
+          <label for="option:{{col}}2"><b>{{col}}</b></label><br >
+          {% if forloop.last %}
+          <div class="invalid-feedback">
+            <strong>Por favor escoge una variable</strong>
+          </div>
+          {% endif %}
         </div>
         {% endfor %}
         <button class="btn btn-primary" type="submit">Siguiente</button>

@@ -112,14 +112,26 @@ def crea_Proyecto(request):
     Desc = request.POST['descripcion']
     URL = request.POST['URL']
     data = request.FILES['data']
-
-    Proyecto.objects.create(Nombre=Nombre, descripcion=Desc, URL = URL, data = data)
-    return redirect('project_list')
+    
+    ext = os.path.splitext(data.name)[1]
+    print(ext)
+    valid_extensions = '.csv'
+    if not ext.lower() in valid_extensions:
+        return redirect('/ErrorProyecto')
+    else:
+        Proyecto.objects.create(Nombre=Nombre, descripcion=Desc, URL = URL, data = data)
+        return redirect('project_list')
 
 def delete_project(request, pk):
     proyecto = Proyecto.objects.get(pk=pk)
     proyecto.delete()
     return redirect('project_list')
+
+def ErrorProyecto(request):
+    proyectos = Proyecto.objects.all()
+    return render(request, 'Proyectos/ProyectosError.html', {
+        'proyectos': proyectos
+    })
 
 ##############
 # Algoritmos #

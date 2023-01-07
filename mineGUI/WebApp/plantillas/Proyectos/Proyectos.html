@@ -25,7 +25,7 @@
           <p class="card-text">{{proyectos.descripcion}}</p>
         </div>
         <div class="card-footer">
-          <a href="eliminarProyecto/{{proyectos.pk}}" class="btn btn-danger btnEliminar"> <i class="bi bi-trash"></i> Eliminar </a>
+          <a href="/eliminarProyecto/{{proyectos.pk}}" class="btn btn-danger btnEliminar"> <i class="bi bi-trash"></i> Eliminar </a>
         </div>
       </div>
     </div>
@@ -35,9 +35,7 @@
   <div class="col mb-3">
     <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#crearProyecto"><i class="bi bi-plus-circle"></i> Crear Proyecto</button>
   </div>
-</div>
-
-
+</div>  
 <!-- Modal -->
 <div class="modal fade" id="crearProyecto" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="crearProyecto" aria-hidden="true">
   <div class="modal-dialog">
@@ -47,10 +45,13 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form method="POST" action="creaProyecto/" enctype="multipart/form-data">{% csrf_token %} 
-          <div class="mb-3">
+        <form class= "row g-3 needs-validation" method="POST" action="/creaProyecto/" enctype="multipart/form-data" novalidate>{% csrf_token %} 
+          <div class="col md-12 mb-3">
             <label for="Nombre" class="form-label">Nombre del proyecto</label>
-            <input type="text" class="form-control" id="Nombre" name="Nombre" placeholder="Ej. Prueba EDA" required>
+            <input type="text" class="form-control" id="Nombre" name="Nombre" placeholder="Ej. Prueba EDA" autocomplete="off" required>
+            <div class="invalid-feedback">
+              <strong>El proyecto debe tener un nombre</strong>
+            </div>
           </div>
           <div class="mb-3">
             <label for="Desc" class="form-label">Descripcion del proyecto</label>
@@ -58,14 +59,20 @@
           </div>
           <div class="mb-3">
             <label for="URL" class="form-label">URL del dataFrame</label>
-            <input type="text" class="form-control" id="URL" name="URL" placeholder="Ej. https://www.github.com/repo/data.csv">
-          </div>
-          <div class="mb-3">
-            <label for="docProy" class="form-label">  DataFrame en formato CSV</label>
-            <input class="form-control" type="file" id="docProy" name="data" required>
+            <input type="text" class="form-control" id="URL" name="URL" placeholder="Ej. https://www.github.com/repo/data.csv" autocomplete="off">
           </div>
 
+          <h5>O</h5>
+
+          <div class="form-check">
+            <label class="btn btn-default btn-file">
+              DataFrame en formato CSV <input   class="form-control" type="file" id="docProy" name="data" accept=".csv" style="display: none;" required>
+          </label>
+          </div>
+
+        <div class="col sm-4">
           <button type="submit" class="btn btn-primary">Crear proyecto</button>
+        </div>
         </form>
       </div>
       <div class="modal-footer">
@@ -80,5 +87,4 @@
 {% endblock %}
 
 {% block scripts %}
-  <script src="{% static 'js/proyectos.js' %}"></script>
 {% endblock %}

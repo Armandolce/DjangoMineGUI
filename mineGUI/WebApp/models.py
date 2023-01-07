@@ -1,4 +1,5 @@
 from django.db import models
+from django.core import validators
 
 class Proyecto(models.Model):
     Nombre = models.CharField(max_length=100)

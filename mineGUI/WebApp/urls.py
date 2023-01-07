@@ -32,8 +32,10 @@ urlpatterns = [
 
     #Proyectos
     path('Proyectos/', views.lista_Proyectos, name='project_list'),
-    path('Proyectos/creaProyecto/', views.crea_Proyecto, name='upload_project'),
-    path('Proyectos/eliminarProyecto/<int:pk>/', views.delete_project, name='delete_project'),
+    path('ErrorProyecto/', views.ErrorProyecto, name='project_Error'),
+    path('creaProyecto/', views.crea_Proyecto, name='upload_project'),
+    path('eliminarProyecto/<int:pk>/', views.delete_project, name='delete_project'),
+    
     #Pruebas
     path('Busqueda/',views.busqueda),
 ]
