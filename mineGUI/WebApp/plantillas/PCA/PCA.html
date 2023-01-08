@@ -10,11 +10,11 @@
   </div>
 </div>
 
+<h5>DataFrame ingresado (Primeros 10 elementos):</h5>
 <div class="table-responsive">
-  <h5>DataFrame ingresado (Primeros 10 elementos):</h5>
   <table class="table  table-striped table-bordered table-hover">
     <caption> {{size.0}} rows x {{size.1}} columns</caption>
-      <tr class="table-primary">
+      <tr class="">
         <th>
           #
         </th>
@@ -41,14 +41,15 @@
 
 <div class="row my-4">
   <div class="col-sm-12">
-    <h5> Paso 1: Hay evidencia de variables posiblemente correlacionadas.</h5>
+    <h5> Paso 1: Evidencia de variables posiblemente correlacionadas.</h5>
+    <!-- <p>Dataframe de las correlaciones:</p> -->
   </div>
-  <div class="container" style="overflow-x: auto;">
-    <h5>Dataframe de las correlaciones:</h5>
-    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
-      <tr>
+<!-- 
+  <div class="table-responsive">
+    <table class="table  table-striped table-bordered table-hover">
+      <tr class="">
         <th>
-  
+    
         </th>
         {% for col in corr.columns %}
           <th>
@@ -69,9 +70,10 @@
           </tr>
         {% endfor %}
     </table>
-  </div>
-  <div class="col-sm-12">
-    <h6>Mapa de calor de correlaciones:</h6>
+  </div> -->
+
+  <div class="col-sm-12 mt-3">
+    <p>Mapa de calor de correlaciones:</p>
     {%  autoescape off %}
     {{ mapaC }}
     {% endautoescape %}
@@ -81,10 +83,10 @@
 <div class="row my-4">
   <div class="col-sm-12">
     <h5> Paso 2: Se hace una estandarización de los datos.</h5>
-  </div>
-  <div class="container" style="overflow-x: auto;">
-    <h5>Dataframe de los datos estandarizados (Primeros 10 elementos):</h5>
-    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+    <p>Dataframe de los datos estandarizados (Estandarizacion StandardScaler):</p>
+</div>
+<div class="table-responsive">
+  <table class="table  table-striped table-bordered table-hover">
       <tr>
         <th>
   
@@ -113,12 +115,14 @@
 
 <div class="row my-4">
   <div class="col-sm-12">
-    <h5> Paso 3 y 4: Se calcula la matriz de covarianzas o correlaciones, 
-      y se calculan los componentes (eigen-vectores) y la varianza (eigen-valores).</h5>
+    <h5> Pasos 3 y 4: Matriz de covarianzas o correlaciones y
+        Calculo de componentes y varianza.</h5>
   </div>
   <div class="col">
-    <h5>Matriz de covarianza:</h5>
-    {{pca1}}
+    <h6>Matriz de covarianza:</h6>
+    {% for element in pca1 %}
+    <p style="text-align: justify;"> {{element}} </p>
+    {% endfor %}
   </div>
 </div>
 
@@ -141,13 +145,13 @@
 <div class="row my-4">
   <div class="col-sm-12">
     <h5> Paso 6: Se examina la proporción de relevancias -cargas-</h5>
+    <h6>Dataframe acotado y con valores absolutos:</h6>
   </div>
-  <div class="container" style="overflow-x: auto;">
-    <h5>Dataframe acotado y con valores absolutos:</h5>
-    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+  <div class="table-responsive">
+    <table class="table  table-striped table-bordered table-hover">
       <tr>
         <th>
-  
+          #
         </th>
         {% for col in CargasC.columns %}
           <th>
@@ -169,18 +173,18 @@
         {% endfor %}
     </table>
   </div>
-  <div class="col-sm-12">
+  <div class="col-sm-12 mt-3">
     <div class="card py-2">
       <div class=" card-body">
         <form  class="needs-validation" novalidate action="/PCA-2/{{pk}}" method="POST"> {% csrf_token %}
           <h5>Selecciona las variables que deseas descartar: </h5>
           {% for col in ME.columns %}
-          <div class="form-check">
-            <input type="checkbox" name="columnas" id="option:{{col}}" value={{col}} />
-            <label for="option:{{col}}"><b>{{col}}</b></label><br />
+          <div class="form-check form-check-inline">
+            <input  class="form-check-input" type="checkbox" name="columnas" id="option:{{col}}" value={{col}} />
+            <label class="form-check-label" for="option:{{col}}"><b>{{col}}</b></label><br />
           </div>
           {% endfor %}
-          <button class="btn btn-primary" type="submit">Siguiente</button>
+          <br><button class="btn  btn-primary" type="submit">Siguiente</button>
         </form>
       </div>
     </div>   

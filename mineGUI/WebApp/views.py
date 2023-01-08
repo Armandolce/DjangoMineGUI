@@ -84,6 +84,8 @@ def showDatos(pk):
 
     #Correlaciones
     correlaciones = df.corr()
+    mask = np.triu(np.ones_like(correlaciones, dtype=np.bool))
+    correlaciones = correlaciones.mask(mask)
     #Mapa de calor de correlaciones
     calor = px.imshow(correlaciones, text_auto=True, aspect="auto")
 
@@ -113,6 +115,9 @@ def crea_Proyecto(request):
     URL = request.POST['URL']
     data = request.FILES['data']
     
+    if Desc == '':
+        Desc = "Descripcion no proporcionada."
+
     ext = os.path.splitext(data.name)[1]
     print(ext)
     valid_extensions = '.csv'
@@ -268,6 +273,8 @@ def EDA(request, pk):
     
     #Correlaciones
     correlaciones = df.corr()
+    mask = np.triu(np.ones_like(correlaciones, dtype=np.bool))
+    correlaciones = correlaciones.mask(mask)
     #Mapa de calor de correlaciones
     calor = px.imshow(correlaciones, text_auto=True, aspect="auto")
     mapaC = plot({'data': calor}, output_type='div')
@@ -282,7 +289,7 @@ def PCA_1(request, pk):
     context['pk'] = pk
     #Comienzo del algoritmo
     df = pd.read_csv(source)
-    df2 = df[:10]
+    df2 = df.iloc[np.r_[0:5, -5:0]]
     context['df']=df2
     
     #Forma del df
@@ -291,6 +298,8 @@ def PCA_1(request, pk):
     
     #Correlaciones
     correlaciones = df.corr()
+    mask = np.triu(np.ones_like(correlaciones, dtype=np.bool))
+    correlaciones = correlaciones.mask(mask)
     #Mapa de calor de correlaciones
     calor = px.imshow(correlaciones, text_auto=True, aspect="auto")
 
@@ -304,30 +313,40 @@ def PCA_1(request, pk):
     NuevaMat = NuevaMatriz.dropna()
     MEstandarizada = Estandarizar.fit_transform(NuevaMat)     
     ME = pd.DataFrame(MEstandarizada, columns=NuevaMat.columns)
-    ME2 = ME[:10]
+    ME2 = ME.iloc[np.r_[0:5, -5:0]]
     context['ME']=ME2
 
     #Instancia de componente PCA
+    PCAOut = []
     pca = PCA(n_components=None)
     pca.fit(MEstandarizada)     
     pcaPrint = pca.components_
-    context['pca1']=pcaPrint
+    for data in pcaPrint:
+        PCAOut.append(data)
+    context['pca1'] = PCAOut
 
     #Numero componentes
     Varianza = pca.explained_variance_ratio_
     context['Var']=Varianza
-    nComp = 0
+    nComp = 1
     VarAc = 0
-    while VarAc <= 0.85:
-        nComp +=1
+    while True:
         VarAc = sum(Varianza[0:nComp])
-        print(nComp)
-
-    context['nComp']=nComp-1
+        print("Yo me imprimo con n comp en {}: {}".format(nComp,VarAc)) 
+        if VarAc < 0.9:
+            nComp +=1
+            print(nComp)
+        else:
+            if VarAc > 0.9:
+                VarAc= sum(Varianza[0:nComp-1])
+                nComp -=1
+            break
+    
+    context['nComp']=nComp
     context['VarAc']=VarAc
 
     #Grafica Varianza acumulada
-    figV = px.line(np.cumsum(pca.explained_variance_ratio_))
+    figV = px.line(np.cumsum(pca.explained_variance_ratio_), markers=True)
     figV.update_xaxes(title_text='Numero de componentes')
     figV.update_yaxes(title_text='Varianza acumulada')
     figVar = plot({'data': figV}, output_type='div')
@@ -335,7 +354,7 @@ def PCA_1(request, pk):
     context['figVar']=figVar
 
     #Paso 6
-    CargasComponentes = pd.DataFrame(abs(pca.components_[0:nComp-1]), columns=NuevaMat.columns)
+    CargasComponentes = pd.DataFrame(abs(pca.components_[0:nComp]), columns=NuevaMat.columns)
     context['CargasC']=CargasComponentes
 
     return render(request, 'PCA/PCA.html', context)
@@ -348,7 +367,8 @@ def PCA_2(request, pk):
     context['pk'] = pk
     df = pd.read_csv(source)
     nDf = df.drop(columns=colDrop)
-    context['ndf']=nDf[:10]
+    outDF = nDf.iloc[np.r_[0:5, -5:0]]
+    context['ndf']=outDF
     #Forma del nuevo df
     size = nDf.shape
     context['size']=size
@@ -1171,11 +1191,5 @@ def SVM_3(request,pk, algType):
 # Vistas con ideas antiguas o pruebas #
 #######################################
 def busqueda(request):
-    proyectoP = Proyecto.objects.get(pk=18)
-    source = proyectoP.data
     context = {}
-    #Comienzo del algoritmo
-    df = pd.read_csv(source)
-    df2 = df[:10]
-    context['df']=df2
     return render(request, 'Busqueda.html', context)

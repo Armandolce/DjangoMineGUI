@@ -57,17 +57,13 @@
             <label for="Desc" class="form-label">Descripcion del proyecto</label>
             <textarea class="form-control" id="Desc" name="descripcion" rows="3"></textarea>
           </div>
+          
           <div class="mb-3">
-            <label for="URL" class="form-label">URL del dataFrame</label>
-            <input type="text" class="form-control" id="URL" name="URL" placeholder="Ej. https://www.github.com/repo/data.csv" autocomplete="off">
-          </div>
-
-          <h5>O</h5>
-
-          <div class="form-check">
-            <label class="btn btn-default btn-file">
-              DataFrame en formato CSV <input   class="form-control" type="file" id="docProy" name="data" accept=".csv" style="display: none;" required>
-          </label>
+            <label for="docProy" class="form-label">  DataFrame en formato CSV</label>
+            <input class="form-control" type="file" id="docProy" name="data"  accept=".csv" required>
+            <div class="invalid-feedback">
+              <strong>Debes proporcionar un archivo</strong>
+            </div>
           </div>
 
         <div class="col sm-4">

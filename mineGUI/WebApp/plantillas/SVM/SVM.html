@@ -7,16 +7,16 @@
 <div class="row">
   <div class="col-xs-12">
     <h1>SVM : {{AlgName}}</h1>
+    <h5>DataFrame ingresado (Primeros 10 elementos):</h5>
   </div>
 </div>
 
 <div class="row my-4">
-  <div class="container" style="overflow-x: auto;">
-    <h5>DataFrame ingresado (Primeros 10 elementos):</h5>
-    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+  <div class="table-responsive">
+    <table class="table  table-striped table-bordered table-hover">
       <tr>
         <th>
-
+          #
         </th>
         {% for col in df.columns %}
           <th>
@@ -57,8 +57,8 @@
     {% endfor %}
   </div>
 
-  <div class="col-sm-12" style="overflow-x: auto;">
-    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+  <div class="table-responsive">
+    <table class="table  table-striped table-bordered table-hover">
       <tr>
         <th>
 
@@ -130,9 +130,9 @@
       <form  class="needs-validation" action="/SVM_2/{{pk}}/{{type}}" method="POST" novalidate> {% csrf_token %}
         <h5>Selecciona las variables predictoras: </h5>
         {% for col in ME.columns %}
-        <div class="form-check">
-          <input type="checkbox" name="predictora" id="option:{{col}}" value={{col}}>
-          <label for="option:{{col}}"><b>{{col}}</b></label><br >
+        <div class="form-check form-check-inline mt-2 mb-3">
+          <input  class="form-check-input" type="checkbox" name="predictora" id="option:{{col}}" value={{col}}>
+          <label class="form-check-label"  for="option:{{col}}"><b>{{col}}</b></label><br >
           {% if forloop.last %}
           <div class="invalid-feedback">
             <strong>Por favor escoge al menos una variable</strong>
@@ -143,9 +143,9 @@
         
         <h5>De igual manera, selecciona la variable clase: </h5>
         {% for col in ME.columns %}
-        <div class="form-check">
-          <input type="radio" name="pronostico" id="option:{{col}}2" value={{col}} required>
-          <label for="option:{{col}}2"><b>{{col}}</b></label><br >
+        <div class="form-check form-check-inline mt-2 mb-3">
+          <input class="form-check-input" type="radio" name="pronostico" id="option:{{col}}2" value={{col}} required>
+          <label class="form-check-label" for="option:{{col}}2"><b>{{col}}</b></label><br >
           {% if forloop.last %}
           <div class="invalid-feedback">
             <strong>Por favor escoge una variable</strong>
