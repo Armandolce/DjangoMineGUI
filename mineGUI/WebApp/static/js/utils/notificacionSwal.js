@@ -1,11 +1,11 @@
 const notificacionSwal=(titleText, text, icon, confirmationButtonText) => {
     Swal.fire({
-        timer: 2000,
-        timerProgressBar: false,
+        timer: 5000,
+        timerProgressBar: true,
         title: titleText,
         text: text,
         icon: icon,
-        showConfirmButton: false,
+        showConfirmButton: true,
         confirmButtonText: confirmationButtonText,
     });
 };

@@ -50,7 +50,10 @@ def showDatos(pk):
     context['pk'] = pk
     #Comienzo del algoritmo
     df = pd.read_csv(source)
-    df2 = df[:10]
+    for i in range(df.shape[1]):
+        df.columns.values[i] = df.columns.values[i].replace(" ","_")
+    
+    df2 = df.iloc[np.r_[0:5, -5:0]]
     context['df'] = df2
     
     #Forma del df
@@ -79,7 +82,7 @@ def showDatos(pk):
     
     #Limpieza de datos categoricos
     NuevaMatriz = df.drop(columns=df.select_dtypes('object'))
-    ME = NuevaMatriz[:10]
+    ME = NuevaMatriz.iloc[np.r_[0:5, -5:0]]
     context['ME']=ME
 
     #Correlaciones
@@ -189,7 +192,7 @@ def EDA(request, pk):
     
     #Comienzo del algoritmo
     df = pd.read_csv(source)
-    df2 = df[:10]
+    df2 = df.iloc[np.r_[0:5, -5:0]]
     context['df'] = df2
     
     #Forma del df
@@ -332,7 +335,7 @@ def PCA_1(request, pk):
     VarAc = 0
     while True:
         VarAc = sum(Varianza[0:nComp])
-        print("Yo me imprimo con n comp en {}: {}".format(nComp,VarAc)) 
+        #print("Yo me imprimo con n comp en {}: {}".format(nComp,VarAc)) 
         if VarAc < 0.9:
             nComp +=1
             print(nComp)
@@ -404,10 +407,14 @@ def AD2(request, pk, algType):
     for i in range (len(predictoras)):
         if(predictoras[i] == pronosticar):
             return redirect('/ADError/{}/{}'.format(pk,algType))
-
+    
+    if( len(predictoras) <= 0):
+        return redirect('/ADError/{}/{}'.format(pk,algType))
     #Paso usual
     source = proyecto.data
-    df = pd.read_csv(source)
+    df = pd.read_csv(source) 
+    for i in range(df.shape[1]):
+        df.columns.values[i] = df.columns.values[i].replace(" ","_")   
     
     #Limpiamos de nuevo
     NuevaMat = df.dropna() 
@@ -418,13 +425,13 @@ def AD2(request, pk, algType):
     X = np.array(NuevaMat[predictoras])
     Xout = pd.DataFrame(data=X, columns=aux.columns.values)
     Xout.to_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/X.csv'), index=False)
-    context['X'] = Xout[:10]
+    context['X'] = Xout.iloc[np.r_[0:5, -5:0]]
 
     Y = np.array(NuevaMat[pronosticar])
     Yout = pd.DataFrame(Y)
     
     Yout.to_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/Y.csv'), index=False)
-    context['Y'] = Yout[:10]
+    context['Y'] = Yout.iloc[np.r_[0:5, -5:0]]
 
     #Division de los datos
     X_train, X_dos, Y_train, Y_dos = model_selection.train_test_split(X, Y, 
@@ -456,13 +463,13 @@ def AD2(request, pk, algType):
     #Se genera el pronóstico
     Y_Pronostico = ModeloAD.predict(X_dos)
     Ypronostico = pd.DataFrame(Y_Pronostico)
-    context['YPron'] = Ypronostico[:10]
+    context['YPron'] = Ypronostico.iloc[np.r_[0:5, -5:0]]
 
     #Comparacion entre pronostico y prueba
     Valores = pd.DataFrame(Y_dos, Y_Pronostico)
     Valores2 = Valores.reset_index()
     ValoresOut = Valores2.rename(columns={Valores2.columns[0]: 'Prueba', Valores2.columns[1]: 'Pronostico'})
-    context['Valores'] = ValoresOut[:10]
+    context['Valores'] = ValoresOut.iloc[np.r_[0:5, -5:0]]
 
     match algType:
         case 'P':
@@ -516,7 +523,7 @@ def AD2(request, pk, algType):
 
     #Eleccion para nuevo pronostico
     predictorasOut = NuevaMat[predictoras]
-    context['Pred'] = predictorasOut[:10]
+    context['Pred'] = predictorasOut.iloc[np.r_[0:5, -5:0]]
 
     return render(request, 'Arboles/AD2.html', context)
 
@@ -606,10 +613,13 @@ def BA2(request, pk, algType):
     predictoras = request.POST.getlist('predictora')
     pronosticar = request.POST['pronostico']
     
-    #verificar que no hayas elegido la misma columna en ambos
+    #verificar que no hayas elegido la misma columna en ambos y que se haya escogido al menos una variable predictora
     for i in range (len(predictoras)):
         if(predictoras[i] == pronosticar):
             return redirect('/BAError/{}/{}'.format(pk,algType))
+    
+    if( len(predictoras) <= 0):
+        return redirect('/BAError/{}/{}'.format(pk,algType))
 
     #Paso usual
     source = proyecto.data
@@ -624,13 +634,13 @@ def BA2(request, pk, algType):
     X = np.array(NuevaMat[predictoras])
     Xout = pd.DataFrame(data=X, columns=aux.columns.values)
     Xout.to_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/X.csv'), index=False)
-    context['X'] = Xout[:10]
+    context['X'] = Xout.iloc[np.r_[0:5, -5:0]]
 
     Y = np.array(NuevaMat[pronosticar])
     Yout = pd.DataFrame(Y)
     
     Yout.to_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/Y.csv'), index=False)
-    context['Y'] = Yout[:10]
+    context['Y'] = Yout.iloc[np.r_[0:5, -5:0]]
 
     #Division de los datos
     X_train, X_dos, Y_train, Y_dos = model_selection.train_test_split(X, Y, 
@@ -645,7 +655,7 @@ def BA2(request, pk, algType):
             
             #Visualizacion de datos de prueba
             Xtest = pd.DataFrame(X_dos)
-            context['Xtest'] = Xtest[:10]
+            context['Xtest'] = Xtest.iloc[np.r_[0:5, -5:0]]
             
             flag = True
             
@@ -662,20 +672,21 @@ def BA2(request, pk, algType):
     #Se genera el pronóstico
     Y_Pronostico = ModeloBA.predict(X_dos)
     Ypronostico = pd.DataFrame(Y_Pronostico)
-    context['YPron'] = Ypronostico[:10]
+    context['YPron'] = Ypronostico.iloc[np.r_[0:5, -5:0]]
 
     #Comparacion entre pronostico y prueba
     Valores = pd.DataFrame(Y_dos, Y_Pronostico)
     Valores2 = Valores.reset_index()
     ValoresOut = Valores2.rename(columns={Valores2.columns[0]: 'Prueba', Valores2.columns[1]: 'Pronostico'})
-    context['Valores'] = ValoresOut[:10]
-
-    #Obtencion del ajuste de Bondad
-    Score = r2_score(Y_dos, Y_Pronostico)
-    context['Score'] = Score
+    context['Valores'] = ValoresOut.iloc[np.r_[0:5, -5:0]]
 
     match algType:
         case 'P':
+
+            #Obtencion del ajuste de Bondad
+            Score = r2_score(Y_dos, Y_Pronostico)
+            context['Score'] = Score
+
             #Criterios
             criterios = []
             criterios.append(ModeloBA.criterion)
@@ -685,6 +696,11 @@ def BA2(request, pk, algType):
             context['criterios'] = criterios
 
         case 'C':
+
+            #Obtencion del ajuste de Bondad
+            Score = accuracy_score(Y_dos, Y_Pronostico)
+            context['Score'] = Score
+
             #Matriz de clasificacion
             ModeloClasificacion1 = ModeloBA.predict(X_dos)
             Matriz_Clasificacion1 = pd.crosstab(Y_dos.ravel(), 
@@ -717,7 +733,7 @@ def BA2(request, pk, algType):
 
     #Eleccion para nuevo pronostico
     predictorasOut = NuevaMat[predictoras]
-    context['Pred'] = predictorasOut[:10]
+    context['Pred'] = predictorasOut.iloc[np.r_[0:5, -5:0]]
 
     return render(request, 'Bosques/BA2.html', context)
 
@@ -793,6 +809,15 @@ def SegClas_2(request, pk):
     Elim = request.POST.getlist('Elim')
     Modelo = request.POST.getlist('Modelo')
     
+    #verificar que no hayas elegido la misma columna en ambos y que se haya escogido al menos una variable predictora
+    for i in range (len(Modelo)):
+        for j in range (len(Elim)):
+            if(Modelo[i] == Elim[j]):
+                return redirect('/SCError/{}'.format(pk))
+    
+    if( len(Modelo) <= 2):
+        return redirect('/SCError/{}'.format(pk))
+
     #Paso usual
     source = proyecto.data
     df = pd.read_csv(source)
@@ -808,7 +833,7 @@ def SegClas_2(request, pk):
     Estandarizar = StandardScaler()
     MEstandarizada = Estandarizar.fit_transform(NuevaMat)     
     ME = pd.DataFrame(MEstandarizada, columns=NuevaMat.columns)
-    ME2 = ME[:10]
+    ME2 = ME.iloc[np.r_[0:5, -5:0]]
     context['ME']=ME2
 
     #Definición de k clusters para K-means
@@ -848,7 +873,7 @@ def SegClas_2(request, pk):
     print(MParticional.labels_)
 
     NuevaMat['clusterP'] = MParticional.labels_
-    context['DfClust'] = NuevaMat[:10]
+    context['DfClust'] = NuevaMat.iloc[np.r_[0:5, -5:0]]
     print(NuevaMat)
 
     #Cantidad de elementos en los clusters
@@ -878,7 +903,7 @@ def SegClas_2(request, pk):
     X = np.array(NuevaMat.loc[:, NuevaMat.columns != 'clusterP'])
     Xout = pd.DataFrame(data=X, columns=aux.columns.values)
     Xout.to_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/X.csv'), index=False)
-    context['X'] = Xout[:10]
+    context['X'] = Xout.iloc[np.r_[0:5, -5:0]]
 
     Y = np.array(NuevaMat[['clusterP']])
     Yout = pd.DataFrame(Y)
@@ -912,7 +937,7 @@ def SegClas_2(request, pk):
     Valores2 = Valores.reset_index()
     ValoresOut = Valores2.rename(columns={Valores2.columns[0]: 'Prueba', Valores2.columns[1]: 'Pronostico'})
     #print(ValoresOut)
-    context['Valores'] = ValoresOut[:10]
+    context['Valores'] = ValoresOut.iloc[np.r_[0:5, -5:0]]
 
     #Obtencion del ajuste de Bondad
     Score = accuracy_score(Y_validation, Y_ClasificacionBA)
@@ -1014,6 +1039,10 @@ def SegClas_3(request,pk):
 
     return render(request, 'SegClas/Clusters3.html', context)
 
+def SCErrror(request, pk):
+    context = showDatos(pk)
+    return render(request, 'SegClas/SCError.html', context)
+
 #Maquinas de soporte vectorial
 def SVM(request, pk, algType):
     context = showDatos(pk)
@@ -1041,6 +1070,14 @@ def SVM_2(request,pk, algType):
     predictoras = request.POST.getlist('predictora')
     pronosticar = request.POST['pronostico']
     
+    #verificar que no hayas elegido la misma columna en ambos
+    for i in range (len(predictoras)):
+        if(predictoras[i] == pronosticar):
+            return redirect('/SVMError/{}/{}'.format(pk,algType))
+    
+    if( len(predictoras) <= 0):
+        return redirect('/SVMError/{}/{}'.format(pk,algType))
+
     #Paso usual
     source = proyecto.data
     df = pd.read_csv(source)
@@ -1055,7 +1092,7 @@ def SVM_2(request,pk, algType):
     X = np.array(NuevaMat[predictoras])
     Xout = pd.DataFrame(data=X, columns=aux.columns.values)
     Xout.to_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/X.csv'), index=False)
-    context['X'] = Xout[:10]
+    context['X'] = Xout.iloc[np.r_[0:5, -5:0]]
 
     Y = np.array(NuevaMat[pronosticar])
     Yout = pd.DataFrame(Y)
@@ -1063,7 +1100,7 @@ def SVM_2(request,pk, algType):
     Yout.to_csv(os.path.join(BASE_DIR, 'WebApp/data/Tmp/Y.csv'), index=False)
 
     
-    context['Y'] = Yout[:10]
+    context['Y'] = Yout.iloc[np.r_[0:5, -5:0]]
 
     #Division de los datos
     X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(X, Y, 
@@ -1091,11 +1128,11 @@ def SVM_2(request,pk, algType):
     Clasificaciones_1 = ModeloSVM_1.predict(X_validation)
     context['Clas1']= Clasificaciones_1
     Clas1Df = pd.DataFrame(Clasificaciones_1)
-    context['ClasDf1'] = Clas1Df[:10]
+    context['ClasDf1'] = Clas1Df.iloc[np.r_[0:5, -5:0]]
 
     #Coomparacion entre Yvalidation y Clasif1
     Clasificaciones = pd.DataFrame(Y_validation, Clasificaciones_1)
-    context['Valores'] = Clasificaciones[:10]
+    context['Valores'] = Clasificaciones.iloc[np.r_[0:5, -5:0]]
     print(Clasificaciones)
 
     #Se calcula la exactitud promedio de la validación
@@ -1124,7 +1161,7 @@ def SVM_2(request,pk, algType):
     #Dataframe de los vectores de soporte
     VectoresSoporte_1 = ModeloSVM_1.support_vectors_
     VectSup = pd.DataFrame(VectoresSoporte_1)
-    context['VectSup'] = VectSup[:10]
+    context['VectSup'] = VectSup.iloc[np.r_[0:5, -5:0]]
     print(VectSup)
 
     #Vectores de soporte
@@ -1138,7 +1175,7 @@ def SVM_2(request,pk, algType):
 
     #Grafica AUC de aqui
     predictorasOut = NuevaMat[predictoras]
-    context['Pred'] = predictorasOut[:10]
+    context['Pred'] = predictorasOut.iloc[np.r_[0:5, -5:0]]
 
 
     return render(request, 'SVM/SVM2.html', context)
@@ -1186,6 +1223,21 @@ def SVM_3(request,pk, algType):
 
     return render(request, 'SVM/SVM3.html', context)
 
+def SVMError(request, pk, algType):
+    context = showDatos(pk)
+    context['type'] = algType
+
+    match algType:
+        case 'L':
+            context['AlgName'] = 'Lineal'
+        case 'P':
+            context['AlgName'] = 'Polinomial'
+        case 'RBF':
+            context['AlgName'] = 'RBF -Función de Base Radial-'
+        case 'SGM':
+            context['AlgName'] = 'Sigmoide'
+
+    return render(request, 'SVM/SVMError.html', context)
 
 #######################################
 # Vistas con ideas antiguas o pruebas #

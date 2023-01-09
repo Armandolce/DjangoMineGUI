@@ -6,28 +6,28 @@
 {% block body %}
 <div class="row">
   <div class="col-xs-12">
-    <h1>Arboles y Bosques: {{AlgName}}</h1>
+    <h1>Bosques Aleatorios: {{AlgName}}</h1>
   </div>
 </div>
 
+<h5>DataFrame X:</h5>
 <div class="row my-4">
-  <div class="container" style="overflow-x: auto;">
-    <h5>DataFrame X (Primeros 10 elementos):</h5>
-    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+  <div class="table-responsive">
+    <table class="table  table-striped table-bordered table-hover">
       <tr>
         <th>
 
         </th>
         {% for col in X.columns %}
           <th>
-            {{col}}
+            <strong>{{col}}</strong>
           </th>
         {% endfor %}
       </tr>
         {% for index, row in X.iterrows %}
           <tr>
             <th>
-              {{index}}
+              <strong>{{index}}</strong>
             </th>
             {% for cell in row %}
               <td>
@@ -42,24 +42,23 @@
 </div>
 
 <div class="row my-4">
-
-  <div class="col-sm-12" style="overflow-x: auto;">
-    <h5>DataFrame Y (Primeros 10 elementos):</h5>
-    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+  <h5>DataFrame Y: </h5>
+  <div class="table-responsive">
+    <table class="table  table-striped table-bordered table-hover">
       <tr>
         <th>
 
         </th>
         {% for col in Y.columns %}
           <th>
-           {{col}}
+           <strong>{{col}}</strong>
           </th>
          {% endfor %}
        </tr>
         {% for index, row in Y.iterrows %}
           <tr>
             <th>
-              {{index}}
+              <strong>{{index}}</strong>
             </th>
             {% for cell in row %}
               <td>
@@ -73,23 +72,23 @@
 </div>
 {% if flag %}
   <div class="row my-4">
-    <div class="col-sm-12" style="overflow-x: auto;">
-      <h5>Division de los datos:</h5>
-      <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+    <h5>Division de los datos:</h5>
+    <div class="table-responsive">
+      <table class="table  table-striped table-bordered table-hover">
         <tr>
           <th>
 
           </th>
           {% for col in Xtest.columns %}
             <th>
-            {{col}}
+            <strong>{{col}}</strong>
             </th>
           {% endfor %}
         </tr>
           {% for index, row in Xtest.iterrows %}
             <tr>
               <th>
-                {{index}}
+                <strong>{{index}}</strong>
               </th>
               {% for cell in row %}
                 <td>
@@ -104,23 +103,23 @@
 {% endif %}
 
 <div class="row my-4">
-  <div class="col-sm-12" style="overflow-x: auto;">
-    <h5>Pronostico generado:</h5>
-    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+  <h5>Pronostico generado:</h5>
+  <div class="table-responsive">
+    <table class="table  table-striped table-bordered table-hover">
       <tr>
         <th>
 
         </th>
         {% for col in YPron.columns %}
           <th>
-           {{col}}
+           <strong>{{col}}</strong>
           </th>
          {% endfor %}
        </tr>
         {% for index, row in YPron.iterrows %}
           <tr>
             <th>
-              {{index}}
+              <strong>{{index}}</strong>
             </th>
             {% for cell in row %}
               <td>
@@ -134,24 +133,18 @@
 </div>
 
 <div class="row my-4">
-  <div class="col-sm-12" style="overflow-x: auto;">
-    <h5>Valor prueba vs valor pronostico:</h5>
-    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+  <h5>Valor prueba vs valor pronostico:</h5>
+  <div class="table-responsive">
+    <table class="table  table-striped table-bordered table-hover">
       <tr>
-        <th>
-
-        </th>
         {% for col in Valores.columns %}
           <th>
-           {{col}}
+           <strong> {{col}} </strong>
           </th>
          {% endfor %}
        </tr>
         {% for index, row in Valores.iterrows %}
           <tr>
-            <th>
-              
-            </th>
             {% for cell in row %}
               <td>
                 {{cell}}
@@ -170,24 +163,24 @@
     <p> RMSE : {{criterios.2}}</p>
   </div>
 {% else %}
+<h5>Matriz de clasificacion:</h5>
   <div class="row my-4">
-    <div class="col-sm-12" style="overflow-x: auto;">
-      <h5>Matriz de clasificacion:</h5>
-      <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+    <div class="table-responsive">
+      <table class="table  table-striped table-bordered table-hover">
         <tr>
           <th>
 
           </th>
           {% for col in MClas.columns %}
             <th>
-            {{col}}
+            <strong>{{col}}</strong>
             </th>
           {% endfor %}
         </tr>
           {% for index, row in MClas.iterrows %}
             <tr>
               <th>
-                {{index}}
+                <strong>{{index}}</strong>
               </th>
               {% for cell in row %}
                 <td>
@@ -203,22 +196,22 @@
   <div class="row my-4">
     <p> <b>Criterio:</b> <br>{{criterios.0}}</p>
     <p> <b>Exactitud: </b> {{criterios.1}}</p>
-    <div class="col-sm-12" style="overflow-x: auto;">
-      <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+    <div class="table-responsive">
+      <table class="table  table-striped table-bordered table-hover">
         <tr>
           <th>
 
           </th>
           {% for col in ReporteClas.columns %}
             <th>
-            {{col}}
+            <strong>{{col}}</strong>
             </th>
           {% endfor %}
         </tr>
           {% for index, row in ReporteClas.iterrows %}
             <tr>
               <th>
-                {{index}}
+                <strong>{{index}}</strong>
               </th>
               {% for cell in row %}
                 <td>
@@ -233,24 +226,24 @@
   </div>
 {% endif %}
 
+<h5>Importancia de cada variable:</h5>
 <div class="row my-4">
-  <div class="col-sm-12" style="overflow-x: auto;">
-    <h5>Importancia de cada variable:</h5>
-    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+  <div class="table-responsive">
+    <table class="table  table-striped table-bordered table-hover">
       <tr>
         <th>
 
         </th>
         {% for col in Imp.columns %}
           <th>
-           {{col}}
+           <strong>{{col}}</strong>
           </th>
          {% endfor %}
        </tr>
         {% for index, row in Imp.iterrows %}
           <tr>
             <th>
-              {{index}}
+              <strong>{{index}}</strong>
             </th>
             {% for cell in row %}
               <td>
@@ -285,7 +278,9 @@
             </div>
           </div>
           {% endfor %}
-          <button class="btn btn-primary" type="submit">Siguiente</button>
+          <div class="col">
+            <button class="btn btn-primary" type="submit">Siguiente</button>
+          </div>
         </form>
       </div>
     </div>   

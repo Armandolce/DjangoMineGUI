@@ -11,23 +11,23 @@
 </div>
 
 <div class="row my-4">
-  <div class="container" style="overflow-x: auto;">
-    <h5>DataFrame ingresado (Primeros 10 elementos):</h5>
-    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+  <h5>DataFrame ingresado:</h5>
+  <div class="table-responsive">
+    <table class="table  table-striped table-bordered table-hover">
       <tr>
         <th>
 
         </th>
         {% for col in df.columns %}
           <th>
-            {{col}}
+            <strong>{{col}}</strong>
           </th>
         {% endfor %}
       </tr>
         {% for index, row in df.iterrows %}
           <tr>
             <th>
-              {{index}}
+              <strong>{{index}}</strong>
             </th>
             {% for cell in row %}
               <td>
@@ -41,71 +41,49 @@
   </div>
 </div>
 
-<div class="row my-4">
+<div class="row justify-content-center my-4">
   <h5>Descripción de la estructura de los datos:</h5>
+    <div class="col-md-6 col-sm-12 mb-3">
+      <div class="card  h-100">
+        <div class="card-body">
+          <h6 class="card-title">Tipos de datos:</h6>
+          <ul>
+            {% for columna in tipos %}  
+            <li>{{columna}}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-sm-12 mb-3">
+      <div class="card  h-100">
+        <div class="card-body">
+          <h6 class="card-title">Cantidad de datos nulos por variable:</h6>
+          <ul>
+            {% for columna in nulos %}  
+            <li>{{columna}}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
 
-  <div class="col-sm-6">
-        <h6>Tipos de datos</h6>
-          {% for columna in tipos %}  
-            <p>{{columna}}</p>
-          {% endfor %}
-  </div>
-  <div class="col-sm-6">
-    <h6>Cantidad de datos nulos por variable</h6>
-    {% for columna in nulos %}  
-      <p>{{columna}}</p>
-    {% endfor %}
-  </div>
-
-  <div class="col-sm-12" style="overflow-x: auto;">
-    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+  <div class="table-responsive">
+    <table class="table  table-striped table-bordered table-hover">
       <tr>
         <th>
 
         </th>
         {% for col in df3.columns %}
           <th>
-           {{col}}
-          </th>
-         {% endfor %}
-       </tr>
-        {% for index, row in df3.iterrows %}
-          <tr>
-            <th>
-              {{index}}
-            </th>
-            {% for cell in row %}
-              <td>
-                {{cell}}
-              </td>
-            {% endfor %}
-          </tr>
-        {% endfor %}
-     </table>
-  </div>
-</div>
-
-<div class="row my-4">
-  <div class="col-sm-12">
-    <h5> Seleccion de caracteristicas.</h5>
-  </div>
-  <div class="container" style="overflow-x: auto;">
-    <h5>Dataframe de las correlaciones:</h5>
-    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
-      <tr>
-        <th>
-  
-        </th>
-        {% for col in corr.columns %}
-          <th>
-            {{col}}
+          <strong>{{col}}</strong>
           </th>
         {% endfor %}
       </tr>
-        {% for index, row in corr.iterrows %}
+        {% for index, row in df3.iterrows %}
           <tr>
             <th>
-              {{index}}
+              <strong>{{index}}</strong>
             </th>
             {% for cell in row %}
               <td>
@@ -116,36 +94,42 @@
         {% endfor %}
     </table>
   </div>
-  <div class="col-sm-12">
+  
+  <div class="col-sm-12 my-4">
+    <h4> Seleccion de caracteristicas</h4>
     <h6>Mapa de calor de correlaciones:</h6>
+    
     {%  autoescape off %}
-    {{ mapaC }}
+      {{ mapaC }}
     {% endautoescape %}
-  </div>
-</div>
 
-<div class="col-sm-12">
-  <div class="card py-2">
-    <div class=" card-body">
-      <form  class="needs-validation" novalidate action="/SC_2/{{pk}}" method="POST"> {% csrf_token %}
-        <h5>Selecciona las variables que desees eliminar: </h5>
-        {% for col in df.columns %}
-        <div class="form-check">
-          <input type="checkbox" name="Elim" id="option:{{col}}" value={{col}} />
-          <label for="option:{{col}}"><b>{{col}}</b></label><br />
-        </div>
-        {% endfor %}
-        <h5>De igual manera, selecciona las variables a usar en la constuccion del modelo : </h5>
-        {% for col in ME.columns %}
-        <div class="form-check">
-          <input type="checkbox" name="Modelo" id="option:{{col}}2" value={{col}} />
-          <label for="option:{{col}}2"><b>{{col}}</b></label><br />
-        </div>
-        {% endfor %}
-        <button class="btn btn-primary" type="submit">Siguiente</button>
-      </form>
-    </div>
-  </div>   
+  </div>
+  
+  <div class="col-sm-12">
+    <div class="card py-2">
+      <div class=" card-body">
+        <form  class="needs-validation" novalidate action="/SC_2/{{pk}}" method="POST"> {% csrf_token %}
+          <h5>Selecciona las variables que desees eliminar: </h5>
+          {% for col in df.columns %}
+          <div class="form-check form-check-inline mt-2 mb-3">
+            <input class="form-check-input" type="checkbox" name="Elim" id="option:{{col}}" value={{col}} />
+            <label class="form-check-label" for="option:{{col}}"><b>{{col}}</b></label> <br>
+          </div>
+          {% endfor %}
+          <h5>De igual manera, selecciona las variables a usar en la constuccion del modelo : </h5>
+          {% for col in ME.columns %}
+          <div class="form-check form-check-inline mt-2 mb-3">
+            <input class="form-check-input" type="checkbox" name="Modelo" id="option:{{col}}2" value={{col}} />
+            <label class="form-check-label" for="option:{{col}}2"><b>{{col}}</b></label> <br>
+          </div>
+          {% endfor %}
+          <div class="col">
+            <button class="btn btn-primary" type="submit">Siguiente</button>
+          </div>
+        </form>
+      </div>
+    </div>   
+  </div>
 </div>
 
 

@@ -10,23 +10,23 @@
 {% block body %}
 <div class="col-sm-12">
     <h5>Seleccion de variables menos significativas</h5>
-    <div class="container" style="overflow-x: auto;">
-      <h6>Nuevo dataframe:</h6>
-      <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+    <h6>Nuevo dataframe:</h6>
+    <div class="table-responsive">
+      <table class="table  table-striped table-bordered table-hover">
         <tr>
           <th>
     
           </th>
           {% for col in ndf.columns %}
             <th>
-              {{col}}
+              <strong>{{col}}</strong>
             </th>
           {% endfor %}
         </tr>
           {% for index, row in ndf.iterrows %}
             <tr>
               <th>
-                {{index}}
+                <strong>{{index}}</strong>
               </th>
               {% for cell in row %}
                 <td>

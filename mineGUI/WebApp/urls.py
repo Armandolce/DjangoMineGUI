@@ -25,10 +25,12 @@ urlpatterns = [
     path('SC/<int:pk>',views.SegClas, name='SC'),
     path('SC_2/<int:pk>',views.SegClas_2, name='SC_2'),
     path('SC_3/<int:pk>',views.SegClas_3, name='SC_3'),
+    path('SCError/<int:pk>', views.SCErrror, name='SCError'),
 
     path('SVM/<int:pk>/<str:algType>', views.SVM, name='SVM'),
     path('SVM_2/<int:pk>/<str:algType>', views.SVM_2, name='SVM2'),
     path('SVM_3/<int:pk>/<str:algType>', views.SVM_3, name='SVM3'),
+    path('SVMError/<int:pk>/<str:algType>', views.SVMError, name='SVMError'),
 
     #Proyectos
     path('Proyectos/', views.lista_Proyectos, name='project_list'),
@@ -36,6 +38,4 @@ urlpatterns = [
     path('creaProyecto/', views.crea_Proyecto, name='upload_project'),
     path('eliminarProyecto/<int:pk>/', views.delete_project, name='delete_project'),
     
-    #Pruebas
-    path('Busqueda/',views.busqueda),
 ]

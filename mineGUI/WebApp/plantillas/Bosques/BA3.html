@@ -11,23 +11,23 @@
 </div>
 
 <div class="row my-4">
-  <div class="container" style="overflow-x: auto;">
-    <h5>DataFrame de los datos ingresados:</h5>
-    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+  <h5>DataFrame de los datos ingresados:</h5>
+  <div class="table-responsive">
+    <table class="table  table-striped table-bordered table-hover">
       <tr>
         <th>
 
         </th>
         {% for col in DfN.columns %}
           <th>
-            {{col}}
+            <strong>{{col}}</strong>
           </th>
         {% endfor %}
       </tr>
         {% for index, row in DfN.iterrows %}
           <tr>
             <th>
-              {{index}}
+              <strong>{{index}}</strong>
             </th>
             {% for cell in row %}
               <td>

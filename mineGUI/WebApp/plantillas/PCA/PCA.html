@@ -7,10 +7,9 @@
 <div class="row">
   <div class="col-xs-12">
     <h1>PCA</h1>
+    <h5>DataFrame ingresado:</h5>
   </div>
 </div>
-
-<h5>DataFrame ingresado (Primeros 10 elementos):</h5>
 <div class="table-responsive">
   <table class="table  table-striped table-bordered table-hover">
     <caption> {{size.0}} rows x {{size.1}} columns</caption>
@@ -20,14 +19,14 @@
         </th>
         {% for col in df.columns %}
           <th>
-            {{col}}
+            <strong>{{col}}</strong>
           </th>
         {% endfor %}
       </tr>
       {% for index, row in df.iterrows %}
         <tr>
           <th>
-            {{index}}
+            <strong>{{index}}</strong>
           </th>
           {% for cell in row %}
             <td>
@@ -93,14 +92,14 @@
         </th>
         {% for col in ME.columns %}
           <th>
-            {{col}}
+            <strong>{{col}}</strong>
           </th>
         {% endfor %}
       </tr>
         {% for index, row in ME.iterrows %}
           <tr>
             <th>
-              {{index}}
+              <strong>{{index}}</strong>
             </th>
             {% for cell in row %}
               <td>
@@ -155,14 +154,14 @@
         </th>
         {% for col in CargasC.columns %}
           <th>
-            {{col}}
+            <strong>{{col}}</strong>
           </th>
         {% endfor %}
       </tr>
         {% for index, row in CargasC.iterrows %}
           <tr>
             <th>
-              {{index}}
+              <strong>{{index}}</strong>
             </th>
             {% for cell in row %}
               <td>
