@@ -11,23 +11,23 @@
 </div>
 
 <div class="row my-4">
-  <div class="container" style="overflow-x: auto;">
-    <h5>DataFrame X (Primeros 10 elementos):</h5>
-    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+  <h5>DataFrame X:</h5>
+  <div class="table-responsive">
+    <table class="table  table-striped table-bordered table-hover">
       <tr>
         <th>
-
+          #
         </th>
         {% for col in X.columns %}
           <th>
-            {{col}}
+            <strong>{{col}}</strong>
           </th>
         {% endfor %}
       </tr>
         {% for index, row in X.iterrows %}
           <tr>
             <th>
-              {{index}}
+              <strong>{{index}}</strong>
             </th>
             {% for cell in row %}
               <td>
@@ -37,14 +37,13 @@
           </tr>
         {% endfor %}
     </table>
-    <p> {{size.0}} rows x {{size.1}} columns</p>
   </div>
 </div>
 
 <div class="row my-4">
 
   <div class="col-sm-12" style="overflow-x: auto;">
-    <h5>DataFrame Y (Primeros 10 elementos):</h5>
+    <h5>DataFrame Y:</h5>
     <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
       <tr>
         <th>
@@ -52,14 +51,14 @@
         </th>
         {% for col in Y.columns %}
           <th>
-           {{col}}
+           <strong>{{col}}</strong>
           </th>
          {% endfor %}
        </tr>
         {% for index, row in Y.iterrows %}
           <tr>
             <th>
-              {{index}}
+              <strong>{{index}}</strong>
             </th>
             {% for cell in row %}
               <td>
@@ -83,14 +82,14 @@
         </th>
         {% for col in ClasDf1.columns %}
           <th>
-           {{col}}
+           <strong>{{col}}</strong>
           </th>
          {% endfor %}
        </tr>
         {% for index, row in ClasDf1.iterrows %}
           <tr>
             <th>
-              {{index}}
+              <strong>{{index}}</strong>
             </th>
             {% for cell in row %}
               <td>
@@ -104,23 +103,23 @@
 </div>
 
 <div class="row my-4">
-  <div class="col-sm-12" style="overflow-x: auto;">
-    <h5>Valor prueba vs valor pronostico:</h5>
-    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+  <h5>Valor prueba vs valor pronostico:</h5>
+  <div class="table-responsive">
+    <table class="table  table-striped table-bordered table-hover">
       <tr>
         <th>
 
         </th>
         {% for col in Valores.columns %}
           <th>
-           {{col}}
+           <strong>{{col}}</strong>
           </th>
          {% endfor %}
        </tr>
         {% for index, row in Valores.iterrows %}
           <tr>
             <th>
-              {{index}}
+              <strong>{{index}}</strong>
             </th>
             {% for cell in row %}
               <td>
@@ -135,23 +134,23 @@
 </div>
 
 <div class="row my-4">
-  <div class="col-sm-12" style="overflow-x: auto;">
-    <h5>Matriz de clasificacion:</h5>
-    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+  <h5>Matriz de clasificacion:</h5>
+  <div class="table-responsive">
+    <table class="table  table-striped table-bordered table-hover">
       <tr>
         <th>
 
         </th>
         {% for col in MClas.columns %}
           <th>
-           {{col}}
+           <strong>{{col}}</strong>
           </th>
          {% endfor %}
        </tr>
         {% for index, row in MClas.iterrows %}
           <tr>
             <th>
-              {{index}}
+              <strong>{{index}}</strong>
             </th>
             {% for cell in row %}
               <td>
@@ -167,22 +166,22 @@
 <div class="row my-4">
   <p> <b>Criterio:</b> <br>{{criterios.0}}</p>
   <p> <b>Exactitud: </b> {{criterios.1}}</p>
-  <div class="col-sm-12" style="overflow-x: auto;">
-    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+  <div class="table-responsive">
+    <table class="table  table-striped table-bordered table-hover">
       <tr>
         <th>
 
         </th>
         {% for col in ReporteClas.columns %}
           <th>
-           {{col}}
+           <strong>{{col}}</strong>
           </th>
          {% endfor %}
        </tr>
         {% for index, row in ReporteClas.iterrows %}
           <tr>
             <th>
-              {{index}}
+              <strong>{{index}}</strong>
             </th>
             {% for cell in row %}
               <td>
@@ -197,23 +196,23 @@
 </div>
 
 <div class="row my-4">
-  <div class="col-sm-12" style="overflow-x: auto;">
-    <h5>Vectores de soporte:</h5>
-    <table class="table table-striped" style="  border-collapse: collapse; border-spacing: 0; width: 100%;">
+  <h5>Vectores de soporte:</h5>
+  <div class="table-responsive">
+    <table class="table  table-striped table-bordered table-hover">
       <tr>
         <th>
 
         </th>
         {% for col in VectSup.columns %}
           <th>
-           {{col}}
+           <strong>{{col}}</strong>
           </th>
          {% endfor %}
        </tr>
         {% for index, row in VectSup.iterrows %}
           <tr>
             <th>
-              {{index}}
+              <strong>{{index}}</strong>
             </th>
             {% for cell in row %}
               <td>
@@ -230,12 +229,6 @@
   </div>
 </div>
 
-<div class="col-sm-12">
-  {% autoescape off %}
-  {{ ROC1 }}
-  {% endautoescape %}
-</div>
-
 <div class="row my-4">
   <div class="col-sm-12">
     <div class="card py-2">
@@ -244,8 +237,11 @@
           <h5>Selecciona los valores para el nuevo pronostico: </h5>
           {% for col in Pred.columns %}
           <div class="form-check">
-            <input type="number" min="0" oninput="validity.valid||(value='');" name="NClas" id="option:{{col}}"/>
-            <label for="option:{{col}}"><b>{{col}}</b></label><br/>
+            <input type="number" min="0" oninput="validity.valid||(value='');" name="NClas" id="option:{{col}}" step="any" required>
+            <label for="option:{{col}}"><b>{{col}}</b></label><br>
+            <div class="invalid-feedback">
+              <strong>Por favor brinda un valor valido</strong>
+            </div>
           </div>
           {% endfor %}
           <button class="btn btn-primary" type="submit">Siguiente</button>

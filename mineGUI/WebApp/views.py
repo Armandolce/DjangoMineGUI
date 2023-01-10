@@ -292,6 +292,8 @@ def PCA_1(request, pk):
     context['pk'] = pk
     #Comienzo del algoritmo
     df = pd.read_csv(source)
+    for i in range(df.shape[1]):
+        df.columns.values[i] = df.columns.values[i].replace(" ","_")
     df2 = df.iloc[np.r_[0:5, -5:0]]
     context['df']=df2
     
@@ -335,7 +337,6 @@ def PCA_1(request, pk):
     VarAc = 0
     while True:
         VarAc = sum(Varianza[0:nComp])
-        #print("Yo me imprimo con n comp en {}: {}".format(nComp,VarAc)) 
         if VarAc < 0.9:
             nComp +=1
             print(nComp)
@@ -446,7 +447,7 @@ def AD2(request, pk, algType):
             
             #Visualizacion de datos de prueba
             Xtest = pd.DataFrame(X_dos)
-            context['Xtest'] = Xtest[:10]
+            context['Xtest'] = Xtest.iloc[np.r_[0:5, -5:0]]
             
             flag = True
             
@@ -560,13 +561,11 @@ def AD3(request,pk, algType):
 
     col = list(X.columns)
     datoOut = {}
-    print(X.shape[1])
     for i in range(X.shape[1]):
-        datoOut[col[i]] = int(Val[i])
+        datoOut[col[i]] = float(Val[i])
     Npron = pd.DataFrame(datoOut, index=[0])
     context['DfN'] = Npron
     resultado = ModeloAD.predict(Npron)
-    print(resultado)
     context['resultado'] = resultado
 
     return render(request, 'Arboles/AD3.html', context)
@@ -624,6 +623,8 @@ def BA2(request, pk, algType):
     #Paso usual
     source = proyecto.data
     df = pd.read_csv(source)
+    for i in range(df.shape[1]):
+        df.columns.values[i] = df.columns.values[i].replace(" ","_")
     
     #Limpiamos de nuevo
     NuevaMat = df.dropna() 
@@ -771,7 +772,7 @@ def BA3(request,pk, algType):
     datoOut = {}
     print(X.shape[1])
     for i in range(X.shape[1]):
-        datoOut[col[i]] = int(Val[i])
+        datoOut[col[i]] = float(Val[i])
     Npron = pd.DataFrame(datoOut, index=[0])
     context['DfN'] = Npron
     resultado = ModeloBA.predict(Npron)
@@ -857,44 +858,35 @@ def SegClas_2(request, pk):
 
     kl = KneeLocator(range(2, 10), SSE, curve="convex", direction="decreasing")
     context['knee']= kl.elbow
-    print(kl.elbow)
-
-    #Lista dummy para en numero de clases en las curvas
-    num = []
-    for i in range (kl.elbow):
-        num.append(i)
-
-    print(num)
 
     #Se crean las etiquetas de los elementos en los clusters
     MParticional = KMeans(n_clusters=kl.elbow, random_state=0).fit(MEstandarizada)
     MParticional.predict(MEstandarizada)
     context['Mpart'] = MParticional.labels_
-    print(MParticional.labels_)
 
     NuevaMat['clusterP'] = MParticional.labels_
     context['DfClust'] = NuevaMat.iloc[np.r_[0:5, -5:0]]
-    print(NuevaMat)
 
     #Cantidad de elementos en los clusters
     ClustEl =NuevaMat.groupby(['clusterP'])['clusterP'].count()
     ClustOut = pd.DataFrame(ClustEl).transpose()
     context['ClustEl'] = ClustOut
-    print(NuevaMat.groupby(['clusterP'])['clusterP'].count())
 
-    context['DfClust2'] = NuevaMat[NuevaMat.clusterP == 1].head(10)
-    #Forma del df
-    sizeC = NuevaMat[NuevaMat.clusterP == 1].shape
-    context['size'] = sizeC
-    print(NuevaMat[NuevaMat.clusterP == 1])
-
+    #Centroides
     CentroidesP = NuevaMat.groupby('clusterP').mean()
     context['CentroidesP'] = CentroidesP
-    print(CentroidesP) 
 
-    #Grafica 3d de plotly aqui
-    figScat = px.scatter_3d(data_frame =NuevaMat, x=MEstandarizada[:,0], y=MEstandarizada[:,1], z=MEstandarizada[:,2], color = NuevaMat['clusterP'], hover_name=NuevaMat['clusterP'], symbol='clusterP')
-    figScat.add_scatter3d(x=MParticional.cluster_centers_[:, 0], y=MParticional.cluster_centers_[:, 1], z=MParticional.cluster_centers_[:, 2], mode='markers')
+    #Grafica 3d
+    figScat = px.scatter_3d(data_frame =NuevaMat, 
+                            x=MEstandarizada[:,0], 
+                            y=MEstandarizada[:,1], 
+                            z=MEstandarizada[:,2], 
+                            color = NuevaMat['clusterP'], 
+                            hover_name=NuevaMat['clusterP'], symbol='clusterP')
+    figScat.add_scatter3d(x=MParticional.cluster_centers_[:, 0], 
+                        y=MParticional.cluster_centers_[:, 1], 
+                        z=MParticional.cluster_centers_[:, 2], mode='markers')
+    
     figScatOut = plot({'data': figScat}, output_type='div')
     context['figVar2']=figScatOut
 
@@ -965,9 +957,6 @@ def SegClas_2(request, pk):
     Importancia = pd.DataFrame({'Variable': list(NuevaMat.loc[:, NuevaMat.columns != 'clusterP']),
                             'Importancia': ClasificacionBA.feature_importances_}).sort_values('Importancia', ascending=False)
     context['Imp'] = Importancia
-    #print(Importancia)
-
-    #Reporte o arbol en texto
 
     #Reporte o arbol en texto
     Estimador = ClasificacionBA.estimators_[50]
@@ -980,7 +969,12 @@ def SegClas_2(request, pk):
     #Eleccion para nuevo pronostico
     context['Pred'] = Modelo
 
-    #Falta rendimiento
+    #Lista dummy para en numero de clases en las curvas
+    num = []
+    for i in range (kl.elbow):
+        num.append(i)
+
+    #Rendimiento
     y_score = ClasificacionBA.predict_proba(X_validation)
     y_test_bin = label_binarize(Y_validation, classes=num)
     n_classes = y_test_bin.shape[1]
@@ -1030,7 +1024,7 @@ def SegClas_3(request,pk):
     col = list(X.columns)
     datoOut = {}
     for i in range(X.shape[1]):
-        datoOut[col[i]] = int(Val[i])
+        datoOut[col[i]] = float(Val[i])
     Npron = pd.DataFrame(datoOut, index=[0])
     context['DfN'] = Npron
     resultado = ClasificacionBA.predict(Npron)
@@ -1081,9 +1075,8 @@ def SVM_2(request,pk, algType):
     #Paso usual
     source = proyecto.data
     df = pd.read_csv(source)
-    
-    #Limpiamos de nuevo Xd'nt
-    #NuevaMatriz = df.drop(columns=df.select_dtypes('object'))
+    for i in range(df.shape[1]):
+        df.columns.values[i] = df.columns.values[i].replace(" ","_")
     NuevaMat = df.dropna() 
 
 
@@ -1162,7 +1155,6 @@ def SVM_2(request,pk, algType):
     VectoresSoporte_1 = ModeloSVM_1.support_vectors_
     VectSup = pd.DataFrame(VectoresSoporte_1)
     context['VectSup'] = VectSup.iloc[np.r_[0:5, -5:0]]
-    print(VectSup)
 
     #Vectores de soporte
     NSup = ModeloSVM_1.n_support_
@@ -1170,10 +1162,8 @@ def SVM_2(request,pk, algType):
     VectList = ModeloSVM_1.support_
     context['VectList'] = VectList
     
-    print('Número de vectores de soporte: \n', ModeloSVM_1.n_support_)
-    print('Vectores de soporte: \n', ModeloSVM_1.support_)
 
-    #Grafica AUC de aqui
+    #NUeva clasificacion
     predictorasOut = NuevaMat[predictoras]
     context['Pred'] = predictorasOut.iloc[np.r_[0:5, -5:0]]
 
@@ -1214,7 +1204,7 @@ def SVM_3(request,pk, algType):
     col = list(X.columns)
     datoOut = {}
     for i in range(X.shape[1]):
-        datoOut[col[i]] = int(Val[i])
+        datoOut[col[i]] = float(Val[i])
     Npron = pd.DataFrame(datoOut, index=[0])
     context['DfN'] = Npron
     resultado = ModeloSVM_1.predict(Npron)
@@ -1238,10 +1228,3 @@ def SVMError(request, pk, algType):
             context['AlgName'] = 'Sigmoide'
 
     return render(request, 'SVM/SVMError.html', context)
-
-#######################################
-# Vistas con ideas antiguas o pruebas #
-#######################################
-def busqueda(request):
-    context = {}
-    return render(request, 'Busqueda.html', context)
